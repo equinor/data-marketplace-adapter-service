@@ -1,0 +1,1 @@
+# dm-adapter-service
