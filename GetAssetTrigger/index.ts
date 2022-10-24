@@ -7,17 +7,17 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
   const { id } = context.bindingData
 
   try {
-    const { data } = await axios.get(`${config.COLLIBRA_BASE_URL}/assets/${id}`, {
+    const { data: collibraAsset } = await axios.get(`${config.COLLIBRA_BASE_URL}/assets/${id}`, {
       headers: {
         authorization: req.headers.authorization,
       },
     })
 
     const asset: Asset = {
-      createdAt: new Date(data.createdOn),
-      description: "", // TODO: get description
+      createdAt: new Date(collibraAsset.createdOn),
+      description: "",
       excerpt: "",
-      id: data.id,
+      id: collibraAsset.id,
       provider: {
         id: "",
         name: "Collibra",
@@ -26,12 +26,24 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       rating: 0,
       tags: [],
       type: {
-        id: data.type.id,
-        name: data.type.name,
+        id: collibraAsset.type.id,
+        name: collibraAsset.type.name,
       },
-      updatedAt: new Date(data.lastModifiedOn),
-      updateFrequency: "", // TODO: get timeliness
+      updatedAt: new Date(collibraAsset.lastModifiedOn),
+      updateFrequency: "",
     }
+
+    const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
+      headers: {
+        authorization: req.headers.authorization,
+      },
+      params: {
+        assetId: id,
+      },
+    })
+
+    asset.description = collibraAttrs.results.find((attr) => attr.type.name === "Description")?.value ?? ""
+    asset.updateFrequency = collibraAttrs.results.find((attr) => attr.type.name === "Timeliness").value ?? ""
 
     context.res = {
       headers: {
@@ -40,18 +52,20 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       body: JSON.stringify(asset),
     }
   } catch (e) {
-    const _e = e as AxiosError
-
-    context.log(`Request to ${_e.config.url} failed with status code ${_e.response.status}`)
-    context.log(_e.response.data)
+    if (e instanceof AxiosError) {
+      context.log(`Request to ${e.config.url} failed with status code ${e.response.status}`)
+      context.log(e.response.data)
+    } else {
+      context.log(e)
+    }
 
     context.res = {
-      status: _e.status ?? 500,
+      status: e.response?.status ?? 500,
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        error: _e.message,
+        error: e.message,
       }),
     }
   }
