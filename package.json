@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prepare": "husky install",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "lint-staged": {
+    "*.{j,t}s": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -12,7 +19,13 @@
   "devDependencies": {
     "@azure/functions": "^3.2.0",
     "@types/node": "^18.11.2",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "@typescript-eslint/parser": "^5.40.1",
     "azure-functions-core-tools": "^4.0.4829",
+    "eslint": "^8.26.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   }
 }
