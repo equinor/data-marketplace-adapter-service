@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import axios, { AxiosError } from "axios"
 import type { Asset } from "@equinor/data-marketplace-models"
 import { config } from "../config"
+import { htmlToPortableText } from "../lib/html_to_portable_text"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
@@ -42,8 +43,15 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       },
     })
 
-    asset.description = collibraAttrs.results.find((attr) => attr.type.name === "Description")?.value ?? ""
-    asset.updateFrequency = collibraAttrs.results.find((attr) => attr.type.name === "Timeliness").value ?? ""
+    const descriptionAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Description")?.value
+    if (descriptionAttrValue) {
+      asset.description = htmlToPortableText(descriptionAttrValue)
+    }
+
+    const timelinessAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Timeliness")?.value
+    if (timelinessAttrValue) {
+      asset.updateFrequency = htmlToPortableText(timelinessAttrValue)
+    }
 
     context.res = {
       headers: {
