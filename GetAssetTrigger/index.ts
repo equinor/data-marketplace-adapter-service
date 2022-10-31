@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import axios, { AxiosError } from "axios"
 import type { Asset } from "@equinor/data-marketplace-models"
 import { config } from "../config"
+import { LabelledEntityReference } from "@equinor/data-marketplace-models/types/LabelledEntityReference"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
@@ -32,6 +33,14 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       updatedAt: new Date(collibraAsset.lastModifiedOn),
       updateFrequency: "",
     }
+
+    const { data: collibraTags } = await axios.get<any[]>(`${config.COLLIBRA_BASE_URL}/tags/asset/${id}`, {
+      headers: {
+        authorization: req.headers.authorization,
+      },
+    })
+
+    asset.tags = collibraTags?.map((tag) => ({ id: tag.id, label: tag.name })) ?? []
 
     const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
       headers: {
