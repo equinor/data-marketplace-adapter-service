@@ -1,17 +1,17 @@
-import { getRndBlockKey } from "../get_rnd_block_key"
+import { getRandomBlockKey } from "../get_rnd_block_key"
 
 const deserializeTableRows = (el: HTMLTableSectionElement, cellType: string) => {
   return Array.from(el.children).map((row) => {
     const cells = Array.from(row.children).map((cell) => ({
       _type: cellType,
       text: cell.textContent,
-      _key: getRndBlockKey(),
+      _key: getRandomBlockKey(),
     }))
 
     return {
       _type: "tr",
       cells,
-      _key: getRndBlockKey(),
+      _key: getRandomBlockKey(),
     }
   })
 }
@@ -25,7 +25,7 @@ export const deserializeTable = (el: HTMLElement, next: any, block: any) => {
 
   return block({
     _type: "table",
-    _key: getRndBlockKey(),
+    _key: getRandomBlockKey(),
     headerRow,
     rows,
   })
