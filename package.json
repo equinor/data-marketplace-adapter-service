@@ -11,7 +11,7 @@
     "start": "func start",
     "dev": "npm-run-all --parallel build:watch start",
     "lint": "eslint \"**/*.{j,t}s\"",
-    "fmt": "prettier --write \"**/*.{j,t}s\""
+    "format": "prettier --write \"**/*.{j,t}s\""
   },
   "lint-staged": {
     "*.{j,t}s": [
