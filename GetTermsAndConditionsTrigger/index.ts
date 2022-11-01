@@ -2,6 +2,8 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import axios from "axios"
 import { config } from "../config"
 import { htmlToPortableText } from "../lib/html_to_portable_text"
+import type { RightsToUse } from "@equinor/data-marketplace-models"
+import type { PortableTextBlock } from "@portabletext/types"
 
 const GetTermsAndConditionTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { data: relationTypeIDs } = await axios.get(`${config.COLLIBRA_BASE_URL}/relationTypes`, {
@@ -34,35 +36,52 @@ const GetTermsAndConditionTrigger: AzureFunction = async function (context: Cont
     params: { assetId: asset.id },
   })
 
-  const rtu = {
-    id: relationsFromSource.results[0].target.id,
+  const rtu: RightsToUse = {
+    id: asset.id,
+    name: asset.name.trim(),
     createdAt: new Date(asset.createdOn),
     updatedAt: new Date(asset.lastModifiedOn),
-    description: "",
-    authURL: {},
-    terms: {},
+    description: [],
+    authURL: {
+      id: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      value: "",
+      name: "",
+    },
+    terms: {
+      id: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      value: "",
+      name: "",
+    },
   }
 
-  const descriptionAttr = htmlToPortableText(
-    attributes.find((attr) => attr.type.name.toLowerCase() === "description").value
-  )
+  const descriptionAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "description").value
   if (descriptionAttr) {
-    rtu.description = descriptionAttr
+    rtu.description = htmlToPortableText(descriptionAttr)
   }
 
   const authURLAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "authorization url")
   if (authURLAttr) {
     rtu.authURL = {
+      ...rtu.authURL,
       id: authURLAttr.id,
-      value: authURLAttr.value,
+      value: authURLAttr.value as string,
+      createdAt: new Date(authURLAttr.createdOn),
+      updatedAt: new Date(authURLAttr.lastModifiedOn),
     }
   }
 
   const termsAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "terms and conditions")
   if (termsAttr) {
     rtu.terms = {
+      ...rtu.terms,
       id: termsAttr.id,
       value: htmlToPortableText(termsAttr.value),
+      createdAt: new Date(termsAttr.createdOn),
+      updatedAt: new Date(termsAttr.lastModifiedOn),
     }
   }
 
