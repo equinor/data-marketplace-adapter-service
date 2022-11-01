@@ -1,0 +1,77 @@
+name: Validate
+description: Ensure code quality and code formatting
+on:
+  workflow_dispatch:
+    push:
+      branches:
+        - main
+      pull_request:
+        branches:
+          - main
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+jobs:
+  setup:
+    name: Setup Node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        id: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Node version
+        id: node-v
+        run: node --version
+      - name: NPM version
+        id: npm-v
+        run: npm --version
+      - name: Cache files
+        id: cache-files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./*
+            .npm
+          key: ${{ github.sha }}
+      - name: Log errors to Slack
+        id: slack-err-log
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          if: failure()
+  code-quality:
+    name: Validate code quality
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get files
+        id: get-files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./*
+            .npm
+          key: ${{ github.sha }}
+      - name: Lint
+        id: lint
+        run: |
+          npm run lint
+      - name: No emit build
+        id: noEmit-build
+        run: |
+          npx tsc --noEmit
+      - name: Log errors to Slack
+        id: slack-err-log
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          if: faliure()
