@@ -1,89 +1,23 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import type { RightsToUse } from "@equinor/data-marketplace-models"
-import axios, { AxiosError } from "axios"
-import { config } from "../config"
+import type { AxiosError } from "axios"
 import { htmlToPortableText } from "../lib/html_to_portable_text"
+import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { getRightsToUseAsset } from "../lib/collibra/client/get_rights_to_use_asset"
+import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
+import { rightsToUseAdapter } from "../lib/collibra/rights_to_use_adapter"
 
 const GetTermsAndConditionTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+  const collibraClient = makeCollibraClient({
+    headers: { authorization: req.headers.authorization },
+  })
+  const { id } = context.bindingData
+
   try {
-    const { data: relationTypeIDs } = await axios.get(`${config.COLLIBRA_BASE_URL}/relationTypes`, {
-      headers: { authorization: req.headers.authorization },
-      params: {
-        sourceTypeName: "data product",
-        targetTypeName: "rights-to-use",
-      },
-    })
+    const asset = await collibraClient(getRightsToUseAsset)(id)
+    const attributes = await collibraClient(getAssetAttributes)(asset.id)
 
-    const { data: relationsFromSource } = await axios.get(`${config.COLLIBRA_BASE_URL}/relations`, {
-      headers: { authorization: req.headers.authorization },
-      params: {
-        relationTypeId: relationTypeIDs.results[0].id,
-        sourceId: context.bindingData.id,
-      },
-    })
-
-    const { data: asset } = await axios.get(
-      `${config.COLLIBRA_BASE_URL}/assets/${relationsFromSource.results[0].target.id}`,
-      {
-        headers: { authorization: req.headers.authorization },
-      }
-    )
-
-    const {
-      data: { results: attributes },
-    } = await axios.get(`${config.COLLIBRA_BASE_URL}/attributes`, {
-      headers: { authorization: req.headers.authorization },
-      params: { assetId: asset.id },
-    })
-
-    const rtu: RightsToUse = {
-      id: asset.id,
-      name: asset.name.trim(),
-      createdAt: new Date(asset.createdOn),
-      updatedAt: new Date(asset.lastModifiedOn),
-      description: [],
-      authURL: {
-        id: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        value: "",
-        name: "",
-      },
-      terms: {
-        id: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        value: "",
-        name: "",
-      },
-    }
-
-    const descriptionAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "description").value
-    if (descriptionAttr) {
-      rtu.description = htmlToPortableText(descriptionAttr)
-    }
-
-    const authURLAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "authorization url")
-    if (authURLAttr) {
-      rtu.authURL = {
-        ...rtu.authURL,
-        id: authURLAttr.id,
-        value: authURLAttr.value as string,
-        createdAt: new Date(authURLAttr.createdOn),
-        updatedAt: new Date(authURLAttr.lastModifiedOn),
-      }
-    }
-
-    const termsAttr = attributes.find((attr) => attr.type.name.toLowerCase() === "terms and conditions")
-    if (termsAttr) {
-      rtu.terms = {
-        ...rtu.terms,
-        id: termsAttr.id,
-        value: htmlToPortableText(termsAttr.value),
-        createdAt: new Date(termsAttr.createdOn),
-        updatedAt: new Date(termsAttr.lastModifiedOn),
-      }
-    }
+    const rtu = rightsToUseAdapter({ ...asset, attributes })
 
     context.res = {
       headers: {
