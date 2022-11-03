@@ -8,5 +8,9 @@
     "rootDir": ".",
     "sourceMap": true,
     "strict": false
-  }
+  },
+  "include": [
+    "**/*.ts",
+    "collibra.d.ts"
+  ]
 }

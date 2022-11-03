@@ -1,4 +1,4 @@
-import { getRandomBlockKey } from "../get_rnd_block_key"
+import { getRandomBlockKey } from "../get_random_block_key"
 
 const deserializeTableRows = (el: HTMLTableSectionElement, cellType: string) => {
   return Array.from(el.children).map((row) => {

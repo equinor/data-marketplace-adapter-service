@@ -16,8 +16,8 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
 
     const asset: Asset = {
       createdAt: new Date(collibraAsset.createdOn),
-      description: "",
-      excerpt: "",
+      description: [],
+      excerpt: [],
       id: collibraAsset.id,
       provider: {
         id: "",
@@ -31,7 +31,7 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
         name: collibraAsset.type.name,
       },
       updatedAt: new Date(collibraAsset.lastModifiedOn),
-      updateFrequency: "",
+      updateFrequency: [],
     }
 
     const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
