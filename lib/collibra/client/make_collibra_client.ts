@@ -1,5 +1,3 @@
-import { OutgoingHttpHeaders } from "http"
-
 import axios, { type Axios, CreateAxiosDefaults } from "axios"
 
 import { config } from "../../../config"

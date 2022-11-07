@@ -1,66 +1,20 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import type { Asset } from "@equinor/data-marketplace-models"
-import axios, { AxiosError } from "axios"
+import { AxiosError } from "axios"
 
-import { config } from "../config"
-import { htmlToPortableText } from "../lib/html_to_portable_text"
+import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
+import { assetAdapter } from "../lib/collibra/asset_adapter"
+import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
+  const collibraClient = makeCollibraClient({ headers: { authorization: req.headers.authorization } })
 
   try {
-    const { data: collibraAsset } = await axios.get(`${config.COLLIBRA_BASE_URL}/assets/${id}`, {
-      headers: {
-        authorization: req.headers.authorization,
-      },
-    })
+    const collibraAsset = await collibraClient(getAssetByID)(id)
+    const collibraAttrs = await collibraClient(getAssetAttributes)(id)
 
-    const asset: Asset = {
-      createdAt: new Date(collibraAsset.createdOn),
-      description: [],
-      excerpt: [],
-      id: collibraAsset.id,
-      provider: {
-        id: "",
-        name: "Collibra",
-      },
-      qualityScore: 0,
-      rating: 0,
-      tags: [],
-      type: {
-        id: collibraAsset.type.id,
-        name: collibraAsset.type.name,
-      },
-      updatedAt: new Date(collibraAsset.lastModifiedOn),
-      updateFrequency: [],
-    }
-
-    const { data: collibraTags } = await axios.get<any[]>(`${config.COLLIBRA_BASE_URL}/tags/asset/${id}`, {
-      headers: {
-        authorization: req.headers.authorization,
-      },
-    })
-
-    asset.tags = collibraTags?.map((tag) => ({ id: tag.id, label: tag.name })) ?? []
-
-    const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
-      headers: {
-        authorization: req.headers.authorization,
-      },
-      params: {
-        assetId: id,
-      },
-    })
-
-    const descriptionAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Description")?.value
-    if (descriptionAttrValue) {
-      asset.description = htmlToPortableText(descriptionAttrValue)
-    }
-
-    const timelinessAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Timeliness")?.value
-    if (timelinessAttrValue) {
-      asset.updateFrequency = htmlToPortableText(timelinessAttrValue)
-    }
+    const asset = assetAdapter({ ...collibraAsset, attributes: collibraAttrs })
 
     context.res = {
       headers: {
