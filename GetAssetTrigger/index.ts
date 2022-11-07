@@ -34,6 +34,14 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       updateFrequency: [],
     }
 
+    const { data: collibraTags } = await axios.get<any[]>(`${config.COLLIBRA_BASE_URL}/tags/asset/${id}`, {
+      headers: {
+        authorization: req.headers.authorization,
+      },
+    })
+
+    asset.tags = collibraTags?.map((tag) => ({ id: tag.id, label: tag.name })) ?? []
+
     const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
       headers: {
         authorization: req.headers.authorization,
