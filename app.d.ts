@@ -1,19 +1,28 @@
-export type Optional<T> = T | null
+import type { OutgoingHttpHeader } from "http"
 
-declare namespace Net {
-  type Method = string
-  type RequestOpts = {
-    method: Method
-    params: URLSearchParams
-  }
-  interface Client {
-    request<T>(url: string, opts: RequestOpts): Promise<T>
-  }
+declare global {
+  type Optional<T> = T | null
 
-  type Result<T> = {
-    status?: number
-    statusText?: string
-    error: Optional<string>
-    value: Optional<T>
+  namespace Net {
+    export type Method = "GET" | "POST" | "DELETE" | "HEAD" | "PATCH" | "PUT" | "OPTIONS" | "TRACE" | "CONNECT"
+
+    export type RequestOpts = Partial<{
+      method: Method
+      headers: Record<string, OutgoingHttpHeader>
+      params: URLSearchParams
+      body: any
+    }>
+
+    export interface Client {
+      get<T>(url: string, opts?: Omit<RequestOpts, "method" | "body">): Promise<T>
+      post<T>(url: string, opts?: Omit<RequestOpts, "method">): Promise<T>
+    }
+
+    type Result<T> = {
+      status?: number
+      statusText?: string
+      error: Optional<string>
+      value: Optional<T>
+    }
   }
 }
