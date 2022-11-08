@@ -1,20 +1,41 @@
+import * as TE from "fp-ts/TaskEither"
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import { AxiosError } from "axios"
 
 import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
 import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
-import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { pipe } from "fp-ts/function"
+import { assetAdapter } from "../lib/collibra/asset_adapter"
+import { AxiosError } from "axios"
+import { Asset } from "@equinor/data-marketplace-models"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
   const collibraClient = makeCollibraClient({ headers: { authorization: req.headers.authorization } })
 
   try {
-    const collibraAsset = await collibraClient(getAssetByID)(id)
-    const collibraAttrs = await collibraClient(getAssetAttributes)(id)
-
-    const asset = assetAdapter({ ...collibraAsset, attributes: collibraAttrs })
+    const asset = await pipe(
+      getAssetByID(collibraClient)(id),
+      TE.bindTo("collibraAsset"),
+      TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),
+      TE.map(({ collibraAsset, collibraAttributes }) =>
+        assetAdapter({ ...collibraAsset, attributes: collibraAttributes })
+      ),
+      TE.match<AxiosError, Net.Result<Asset>, Asset>(
+        (err: AxiosError) => ({
+          status: err.response.status,
+          statusText: err.response.statusText,
+          error: err.message,
+          value: null,
+        }),
+        (collibraAsset) => ({
+          status: 200,
+          statusText: "OK",
+          error: null,
+          value: collibraAsset,
+        })
+      )
+    )()
 
     context.res = {
       headers: {
@@ -22,22 +43,14 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       },
       body: JSON.stringify(asset),
     }
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      context.log(`Request to ${e.config.url} failed with status code ${e.response.status}`)
-      context.log(e.response.data)
-    } else {
-      context.log(e)
-    }
-
+  } catch (error) {
+    console.error(error)
     context.res = {
-      status: e.response?.status ?? 500,
+      status: error.status,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        error: e.message,
-      }),
+      body: JSON.stringify({ error }),
     }
   }
 }
