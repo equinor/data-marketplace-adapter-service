@@ -1,13 +1,18 @@
-import { RequesterFn } from "./make_collibra_client"
+import { AxiosInstance } from "axios"
+import * as E from "fp-ts/Either"
+import { pipe } from "fp-ts/lib/function"
+import * as TE from "fp-ts/TaskEither"
 
-export const getAssetAttributes: RequesterFn<Collibra.Attribute[]> = (client) => async (id: string) => {
-  const {
-    data: { results },
-  } = await client.get<Collibra.PagedAttributeResponse>(`/attributes`, {
-    params: {
-      assetId: id,
-    },
-  })
-
-  return results
-}
+export const getAssetAttributes = (client: AxiosInstance) => (id: string) =>
+  pipe(
+    TE.tryCatch(
+      () =>
+        client.request<Collibra.PagedAttributeResponse>({
+          url: "/attributes",
+          params: new URLSearchParams({ assetId: id }),
+        }),
+      E.toError
+    ),
+    TE.bindTo("res"),
+    TE.map(({ res }) => res.data.results)
+  )
