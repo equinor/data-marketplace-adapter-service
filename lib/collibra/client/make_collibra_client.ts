@@ -1,6 +1,6 @@
-import axios, { type Axios, CreateAxiosDefaults } from "axios"
+import axios, { Axios, CreateAxiosDefaults } from "axios"
 import { OutgoingHttpHeaders } from "http"
-import { config } from "../../config"
+import { config } from "../../../config"
 
 export type RequesterFn<T> = (client: Axios) => (...args: any) => Promise<T>
 
