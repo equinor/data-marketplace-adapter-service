@@ -1,8 +1,15 @@
 {
   "extends": [
-    "eslint:recommended", "plugin:@typescript-eslint/recommended",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "root": true
+  "plugins": [
+    "@typescript-eslint",
+    "import"
+  ],
+  "root": true,
+  "rules": {
+    "import/order": ["error", { "newlines-between": "always", "alphabetize": { "order": "asc" } }]
+  }
 }
