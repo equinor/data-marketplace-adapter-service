@@ -1,6 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import axios, { AxiosError } from "axios"
 import type { Asset } from "@equinor/data-marketplace-models"
+import axios, { AxiosError } from "axios"
+
 import { config } from "../config"
 import { htmlToPortableText } from "../lib/html_to_portable_text"
 
