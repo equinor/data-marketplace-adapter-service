@@ -8,6 +8,8 @@ import { pipe } from "fp-ts/function"
 import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { AxiosError } from "axios"
 import { Asset } from "@equinor/data-marketplace-models"
+import { isErrorResult } from "../lib/net/is_error_result"
+import { makeResult } from "../lib/net/make_result"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
@@ -20,19 +22,9 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     TE.map(({ collibraAsset, collibraAttributes }) =>
       assetAdapter({ ...collibraAsset, attributes: collibraAttributes })
     ),
-    TE.match<AxiosError, Net.Result<Asset>, Asset>(
-      (err: AxiosError) => ({
-        status: err.response.status,
-        statusText: err.response.statusText,
-        error: err.message,
-        value: null,
-      }),
-      (collibraAsset) => ({
-        status: 200,
-        statusText: "OK",
-        error: null,
-        value: collibraAsset,
-      })
+    TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
+      (err) => makeResult<Asset, AxiosError>(err.response.status, err),
+      (collibraAsset) => makeResult<Asset, AxiosError>(200, collibraAsset)
     )
   )()
 
@@ -41,7 +33,7 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(res.error ? { error: res.error } : res.value),
+    body: JSON.stringify(isErrorResult(res) ? { error: (res.value as Error).message } : res.value),
   }
 }
 
