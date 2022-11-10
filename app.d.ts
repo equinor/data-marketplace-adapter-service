@@ -18,11 +18,10 @@ declare global {
       post<T>(url: string, opts?: Omit<RequestOpts, "method">): Promise<T>
     }
 
-    type Result<T> = {
-      status?: number
-      statusText?: string
-      error: Optional<string>
-      value: Optional<T>
+    type Result<T, E extends Error> = {
+      status: number
+      statusText: string
+      value: T | E
     }
   }
 }
