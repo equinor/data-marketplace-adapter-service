@@ -13,6 +13,5 @@ export const getAssetAttributes = (client: AxiosInstance) => (id: string) =>
         }),
       E.toError
     ),
-    TE.bindTo("res"),
-    TE.map(({ res }) => res.data.results)
+    TE.map(({ data }) => data.results)
   )
