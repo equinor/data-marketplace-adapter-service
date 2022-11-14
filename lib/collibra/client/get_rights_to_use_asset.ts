@@ -1,7 +1,7 @@
-import * as TE from "fp-ts/TaskEither"
-import * as E from "fp-ts/Either"
-import { pipe } from "fp-ts/lib/function"
 import { AxiosResponse } from "axios"
+import * as E from "fp-ts/Either"
+import * as TE from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/lib/function"
 
 type RelationTypesResponse = AxiosResponse<Collibra.PagedRelationTypeResponse>
 type RelationsResponse = AxiosResponse<Collibra.PagedRelationResponse>
@@ -19,21 +19,20 @@ export const getRightsToUseAsset = (client: Net.Client) => (id: string) =>
         }),
       E.toError
     ),
-    TE.bindTo("relationTypesResponse"),
-    TE.bind("relationsResponse", ({ relationTypesResponse }) =>
+    TE.chain(({ data }) =>
       TE.tryCatch(
         () =>
           client.get<RelationsResponse>("/relations", {
             params: new URLSearchParams({
-              relationTypeId: relationTypesResponse.data.results[0].id,
+              relationTypeId: data.results[0].id,
               sourceId: id,
             }),
           }),
         E.toError
       )
     ),
-    TE.bind("assetResponse", ({ relationsResponse }) =>
-      TE.tryCatch(() => client.get<AssetResponse>(`/assets/${relationsResponse.data.results[0].target.id}`), E.toError)
+    TE.chain(({ data }) =>
+      TE.tryCatch(() => client.get<AssetResponse>(`/assets/${data.results[0].target.id}`), E.toError)
     ),
-    TE.map(({ assetResponse }) => assetResponse.data)
+    TE.map(({ data }) => data)
   )
