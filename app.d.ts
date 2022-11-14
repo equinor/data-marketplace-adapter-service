@@ -1,8 +1,6 @@
 import type { OutgoingHttpHeader } from "http"
 
 declare global {
-  type Optional<T> = T | null
-
   namespace Net {
     export type Method = "GET" | "POST" | "DELETE" | "HEAD" | "PATCH" | "PUT" | "OPTIONS" | "TRACE" | "CONNECT"
 
