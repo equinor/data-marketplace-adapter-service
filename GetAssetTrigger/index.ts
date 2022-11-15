@@ -1,13 +1,13 @@
-import * as TE from "fp-ts/TaskEither"
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-
-import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
-import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
-import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
-import { pipe } from "fp-ts/function"
-import { assetAdapter } from "../lib/collibra/asset_adapter"
-import { AxiosError } from "axios"
 import { Asset } from "@equinor/data-marketplace-models"
+import { AxiosError } from "axios"
+import * as TE from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/function"
+
+import { assetAdapter } from "../lib/collibra/asset_adapter"
+import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
+import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 
