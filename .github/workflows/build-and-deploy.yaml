@@ -34,8 +34,8 @@ jobs:
         run: npm run lint
       - name: Run tests ✅
         id: test
-        run: npm run test --passWithNoTests
-      - name: Log errors to Slack
+        run: npm run test -flag --passWithNoTests
+      - name: Log errors to Slack 📄
         id: slack-err-log
         uses: act10ns/slack@v1
         with:
