@@ -1,4 +1,4 @@
-name: PROD - Datamarket Place Adapter Service
+name: Build and deploy
 on:
   pull_request:
     branches:
