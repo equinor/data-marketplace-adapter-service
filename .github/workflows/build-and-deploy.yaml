@@ -1,0 +1,48 @@
+name: PROD - Datamarket Place Adapter Service
+on:
+  workflow_dispatch:
+    push:
+      branches:
+        - main
+      pull_request:
+        branches:
+          - main
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  AZURE_RESOURCE_GROUP_NAME: ""
+  AZURE_FUNCTIONAPP_NAME: "datamarket-place-adapter-service"
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "${{ github.workspace }}/"
+  BUILD_OUTPUT_PATH: ${{ github.workspace }}/
+  BUILD_PACKAGE_NAME: adapters.zip
+  BUILD_ARTIFACT_PATH: ${{ github.workspace }}/build_artifacts
+
+jobs:
+  check-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Setup node 🧱
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - name: Node version
+        id: node-v
+        run: node --version
+      - name: Install dependencies 🔧
+        id: install-dependencies
+        run: npm ci
+      - name: Run ESLint 🔎
+        id: lint
+        run: npm run lint
+      - name: Run tests ✅
+        id: test
+        run: npm run test
+      - name: Log errors to Slack
+        id: slack-err-log
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          if: failure()
