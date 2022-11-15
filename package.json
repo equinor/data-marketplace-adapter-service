@@ -24,7 +24,7 @@
   "license": "ISC",
   "devDependencies": {
     "@azure/functions": "^3.2.0",
-    "@equinor/data-marketplace-models": "^2.0.1",
+    "@equinor/data-marketplace-models": "^2.1.0",
     "@portabletext/types": "^2.0.0",
     "@types/jest": "^29.2.2",
     "@types/jsdom": "^20.0.0",
