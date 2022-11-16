@@ -5,30 +5,21 @@ import * as E from "fp-ts/Either"
 import { maintainerAdapter } from "./maintainer_adapter"
 
 describe("maintainerAdapter", () => {
-  let responsibility: Collibra.Responsibility | null = null
+  let role: Collibra.Role | null = null
   let user: Collibra.User | null = null
 
   beforeEach(() => {
-    responsibility = {
-      baseResource: {
-        id: randomUUID(),
-        resourceType: "Asset",
-      },
+    role = {
       createdBy: randomUUID(),
       createdOn: new Date().valueOf(),
+      description: "Lorem ipsum dolor sit amet",
+      global: false,
       id: randomUUID(),
       lastModifiedBy: randomUUID(),
       lastModifiedOn: new Date().valueOf(),
-      owner: {
-        id: randomUUID(),
-        resourceType: "User",
-      },
-      resourceType: "Responsibility",
-      role: {
-        id: randomUUID(),
-        name: "Some Role",
-        resourceType: "Role",
-      },
+      name: "Data Office Admin",
+      permissions: ["ACCESS_DATA", "ADVANCED_DATA_TYPE_ADD", "ADVANCED_DATA_TYPE_EDIT"],
+      resourceType: "Role",
       system: false,
     }
     user = {
@@ -38,7 +29,7 @@ describe("maintainerAdapter", () => {
       apiUser: false,
       createdBy: randomUUID(),
       createdOn: new Date().valueOf(),
-      emailAddress: "name@example.com",
+      emailAddress: "NAME@example.com",
       enabled: true,
       firstName: "Name",
       gender: "UNKNOWN",
@@ -54,24 +45,24 @@ describe("maintainerAdapter", () => {
       phoneNumbers: [],
       resourceType: "User",
       system: false,
-      userName: "name@example.com",
+      userName: "NAME@example.com",
       userSource: "SSO",
       websites: [],
     }
   })
 
   afterEach(() => {
-    responsibility = null
+    role = null
     user = null
   })
 
   it("returns left path for invalid date", () => {
     // @ts-ignore
     user.createdOn = "Invalid date"
-    expect(E.isLeft(maintainerAdapter(responsibility, user))).toBe(true)
+    expect(E.isLeft(maintainerAdapter(user)(role))).toBe(true)
   })
 
   it("returns right path for valid input", () => {
-    expect(E.isRight(maintainerAdapter(responsibility, user))).toBe(true)
+    expect(E.isRight(maintainerAdapter(user)(role))).toBe(true)
   })
 })
