@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "target": "es6",
-    "outDir": "dist",
-    "rootDir": ".",
+    "outDir": "./dist",
+    "rootDir": "./",
     "sourceMap": true,
     "strict": false
   },
   "include": [
-    "**/*.ts",
-    "app.d.ts",
-    "collibra.d.ts"
+    "./**/*.ts",
+    "./app.d.ts",
+    "./collibra.d.ts"
   ]
 }
