@@ -5,8 +5,8 @@ on:
       - main
 env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  AZURE_RESOURCE_GROUP_NAME: ""
-  AZURE_FUNCTIONAPP_NAME: "datamarket-place-adapter-service"
+  AZURE_RESOURCE_GROUP_NAME: "rg-datamarketplace"
+  AZURE_FUNCTIONAPP_NAME: "data-marketplace-adapter-service"
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "${{ github.workspace }}/"
   BUILD_OUTPUT_PATH: ${{ github.workspace }}/
   BUILD_PACKAGE_NAME: adapters.zip
@@ -37,6 +37,43 @@ jobs:
         run: npm run test
       - name: Log errors to Slack 📄
         id: slack-err-log
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
+
+  deploy-az-infrastructure:
+    needs: check-code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Login to Azure 🔐
+        id: login-to-azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Checkout internal 🛎️
+        id: checkout-internal
+        uses: actions/checkout@v3
+        with:
+          repository: "equinor/data-marketplace-internal"
+          ref: main
+          token: ${{ secrets.PAT }}
+
+      - name: Creating Azure Function App 🏗️
+        id: create-azure-app
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az deployment group create \
+            --name az-func-adapter-service-deploy \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME }} \
+            --template-file $GITHUB_WORKSPACE/ci/build-and-deploy/main.bicep \
+      - name: log-errors-to-slack 📄
         uses: act10ns/slack@v1
         with:
           status: ${{ job.status }}
