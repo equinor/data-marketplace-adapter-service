@@ -131,6 +131,41 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
+
+      - name: Fetching Azure Functions Publishing Profile
+        id: fetch-publishing-profile
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $profile = ""
+            $profile = Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RESOURCE_GROUP_NAME -Name $env:AZURE_FUNCTIONAPP_NAME
+            $profile = $profile.Replace("`r", "").Replace("`n", "")
+            Write-Output "pubprofile=$profile" >> $GITHUB_OUTPUT
+            Remove-Variable profile
+          azPSVersion: "latest"
+
+      - name: "Create output directory"
+        shell: bash
+        run: |
+          mkdir ${{ env.BUILD_ARTIFACT_PATH }}
+
+      # Fetch published code
+      - name: Download Azure function release build
+        id: download-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          path: ${{ env.BUILD_ARTIFACT_PATH }}
+
+      # Deploy Azure functions code
+      - name: Run Azure Functions Action
+        id: deploy
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.BUILD_ARTIFACT_PATH }}/${{ env.BUILD_PACKAGE_NAME }}
+          publish-profile: ${{ steps.fetch-publishing-profile.outputs.pubprofile }}
+
       - name: log-errors-to-slack 📄
         uses: act10ns/slack@v1
         with:
