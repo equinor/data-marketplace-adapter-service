@@ -118,3 +118,9 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
         if: failure()
+
+  deploy-function-application:
+    environment:
+      name: production
+    needs: [build-function-application, deploy-az-infrastructure]
+    runs-on: ubuntu-latest
