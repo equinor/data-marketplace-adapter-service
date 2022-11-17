@@ -79,3 +79,42 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
         if: failure()
+
+  build-function-application:
+    needs: check-code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Setup node 🧱
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - name: Node version
+        id: node-v
+        run: node --version
+
+      - name: Install dependencies 🔧
+        id: install-dependencies
+        run: npm ci
+      - name: Build ⚙
+        id: build-functions
+        run: |
+          npm run build
+          mkdir ${{ env.BUILD_ARTIFACT_PATH}}
+          pushd ${{ env.BUILD_OUTPUT_PATH }}
+          zip -r ${{ env.BUILD_ARTIFACT_PATH }}/${{ env.BUILD_PACKAGE_NAME }} .
+          popd
+      - name: Package Azure Function release build
+        id: package-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          path: ${{ env.BUILD_ARTIFACT_PATH }}
+      - name: log-errors-to-slack 📄
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
