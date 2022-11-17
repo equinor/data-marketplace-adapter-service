@@ -124,3 +124,16 @@ jobs:
       name: production
     needs: [build-function-application, deploy-az-infrastructure]
     runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure 🔐
+        id: login-to-azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: log-errors-to-slack 📄
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
