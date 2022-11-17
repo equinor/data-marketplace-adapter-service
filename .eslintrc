@@ -11,5 +11,13 @@
   "root": true,
   "rules": {
     "import/order": ["error", { "newlines-between": "always", "alphabetize": { "order": "asc" } }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.@(spec|int|test).{j,t}s"],
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": 1,
+      }
+    }
+  ]
 }
