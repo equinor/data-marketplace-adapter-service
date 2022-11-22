@@ -1,4 +1,5 @@
 import type { Asset } from "@equinor/data-marketplace-models"
+
 import { htmlToPortableText } from "../html_to_portable_text"
 
 export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attribute[] }): Asset => {

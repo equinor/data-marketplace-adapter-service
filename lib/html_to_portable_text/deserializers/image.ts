@@ -1,4 +1,4 @@
-export const deserializeImage = (el: HTMLElement, next: () => void, block: any) => {
+export const deserializeImage = (el: HTMLElement, _next: () => void, block: any) => {
   return block({
     _type: "image",
     src: el.getAttribute("src"),

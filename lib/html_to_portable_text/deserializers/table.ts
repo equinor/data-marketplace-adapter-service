@@ -16,7 +16,7 @@ const deserializeTableRows = (el: HTMLTableSectionElement, cellType: string) => 
   })
 }
 
-export const deserializeTable = (el: HTMLElement, next: any, block: any) => {
+export const deserializeTable = (el: HTMLElement, _next: any, block: any) => {
   const thead = el.getElementsByTagName("thead")[0]
   const tbody = el.getElementsByTagName("tbody")[0]
 

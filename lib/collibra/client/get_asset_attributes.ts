@@ -1,7 +1,7 @@
 import { AxiosInstance } from "axios"
 import * as E from "fp-ts/Either"
-import { pipe } from "fp-ts/lib/function"
 import * as TE from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/lib/function"
 
 export const getAssetAttributes = (client: AxiosInstance) => (id: string) =>
   pipe(
