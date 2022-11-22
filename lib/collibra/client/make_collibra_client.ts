@@ -1,4 +1,4 @@
-import axios, { type Axios, CreateAxiosDefaults } from "axios"
+import axios, { Axios, CreateAxiosDefaults } from "axios"
 
 import { config } from "../../../config"
 
