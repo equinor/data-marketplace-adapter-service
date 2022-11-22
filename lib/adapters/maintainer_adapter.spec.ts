@@ -1,15 +1,19 @@
 import { randomUUID } from "crypto"
 
 import * as E from "fp-ts/Either"
+import * as O from "fp-ts/Option"
+import { pipe } from "fp-ts/lib/function"
+
+import { invalidateCollibraResource } from "../testing/invalidate_collibra_resource"
 
 import { maintainerAdapter } from "./maintainer_adapter"
 
 describe("maintainerAdapter", () => {
-  let role: Collibra.Role | null = null
-  let user: Collibra.User | null = null
+  let role: O.Option<Collibra.Role> = O.none
+  let user: O.Option<Collibra.User> = O.none
 
   beforeEach(() => {
-    role = {
+    role = O.some({
       createdBy: randomUUID(),
       createdOn: new Date().valueOf(),
       description: "Lorem ipsum dolor sit amet",
@@ -21,8 +25,8 @@ describe("maintainerAdapter", () => {
       permissions: ["ACCESS_DATA", "ADVANCED_DATA_TYPE_ADD", "ADVANCED_DATA_TYPE_EDIT"],
       resourceType: "Role",
       system: false,
-    }
-    user = {
+    })
+    user = O.some({
       activated: true,
       additionalEmailAddresses: [],
       addresses: [],
@@ -48,7 +52,7 @@ describe("maintainerAdapter", () => {
       userName: "NAME@example.com",
       userSource: "SSO",
       websites: [],
-    }
+    })
   })
 
   afterEach(() => {
@@ -57,9 +61,12 @@ describe("maintainerAdapter", () => {
   })
 
   it("returns left path for invalid date", () => {
+    const invalidUser = pipe(user, O.map(invalidateCollibraResource))
+
+    const invalidRole = pipe(role, O.map(invalidateCollibraResource))
+
     // @ts-ignore
-    user.createdOn = "Invalid date"
-    expect(E.isLeft(maintainerAdapter(user)(role))).toBe(true)
+    expect(E.isLeft(maintainerAdapter(invalidUser)(invalidRole))).toBe(true)
   })
 
   it("returns right path for valid input", () => {
