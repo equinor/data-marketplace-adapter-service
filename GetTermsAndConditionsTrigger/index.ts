@@ -26,7 +26,7 @@ const GetTermsAndConditionTrigger: AzureFunction = async function (context: Cont
       rightsToUseAdapter({ ...collibraRtuAsset, attributes: collibraRtuAttrs })
     ),
     TE.match<AxiosError, Net.Result<RightsToUse, AxiosError>, RightsToUse>(
-      (err) => makeResult<RightsToUse, AxiosError>(err.response.status, err),
+      (err) => makeResult<RightsToUse, AxiosError>(err.response?.status ?? 500, err),
       (asset) => makeResult<RightsToUse, AxiosError>(200, asset)
     )
   )()
