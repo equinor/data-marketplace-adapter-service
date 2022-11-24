@@ -1,81 +1,56 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import axios, { AxiosError } from "axios"
-import { config } from "../config"
+/* eslint-disable */
+import type { AzureFunction, Context, HttpRequest } from "@azure/functions"
+
+import * as TE from "fp-ts/TaskEither"
+import * as A from "fp-ts/Array"
+import { pipe } from "fp-ts/lib/function"
+
+import { getProductType } from "../lib/collibra/client/get_product_type"
+import { getStatusByName } from "../lib/collibra/client/get_status_id"
+import { getMostViewed } from "../lib/collibra/client/get_most_viewed"
+import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { makeResult } from "../lib/net/make_result"
+import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
+import { assetAdapter } from "../lib/collibra/asset_adapter"
+import { AxiosError } from "axios"
+import { Asset } from "@equinor/data-marketplace-models"
 
 const GetPopularAssets: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+  const collibraClient = makeCollibraClient({
+    headers: { authorization: req.headers.authorization },
+  })
+
+  const { id } = context.bindingData
   const limit = Number.isNaN(Number(req.query.limit)) ? undefined : Number(req.query.limit)
   const offset = 0
-  if (!limit) {
-    console.log("[GetPopularAsset] Invalid limit param", req.query.limit)
-    context.res = {
-      status: 400,
-    }
-    return
-  }
-  try {
-    const { data: approvedStatus } = await axios.get<Collibra.Status>(
-      `${config.COLLIBRA_BASE_URL}/statuses/name/Approved`,
-      {
-        headers: {
-          authorization: req.headers.authorization,
-        },
-      }
-    )
 
-    const { data: dataProductType } = await axios.get<{ results: Collibra.AssetType }>(
-      `${config.COLLIBRA_BASE_URL}/assetTypes`,
-      {
-        headers: {
-          authorization: req.headers.authorization,
-        },
-        params: { name: "data product" },
-      }
-    )
-    const dataProductTypeId = dataProductType.results[0]?.id
-    if (dataProductTypeId === "undefined") {
-      return context.res.status(500)
-    }
-
-    const { data: mostViewedStats } = await axios.get<{ results: Collibra.NavigationStatistic[] }>(
-      `${config.COLLIBRA_BASE_URL}/navigation/most_viewed`,
-      {
-        headers: {
-          authorization: req.headers.authorization,
-        },
-        params: { offset: offset, limit, isGuestExcluded: true },
-      }
-    )
-
-    const popularAssets = await Promise.all(
-      mostViewedStats.results.map(async (item) => {
-        const asset = await axios.get<Collibra.Asset>(`${config.COLLIBRA_BASE_URL}/assets/${item.assetId}`, {
-          headers: {
-            authorization: req.headers.authorization,
-          },
-          params: {
-            statusIds: approvedStatus.id,
-            typeIds: dataProductTypeId,
-          },
-        })
-        return {
-          ...asset.data,
-          numberOfViews: item.numberOfViews,
-        }
-      })
-    )
-    context.res = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(popularAssets),
-    }
-  } catch (e) {
-    context.res = {
-      status: (e as AxiosError).response.status ?? 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: e.message }),
-    }
-  }
+  const res = await pipe(
+    getStatusByName(collibraClient)("Approved"),
+  TE.bindTo("approvedStatus"),
+  TE.bind("dataProductType", () => getProductType(collibraClient)("Data Product")),
+  // make next line recursive
+  TE.map(({ approvedStatus, dataProductType }) => getMostViewed(collibraClient)([], approvedStatus.id, dataProductType[0]?.id, limit, offset)),
+  TE.sequenceArray,
+  TE.bindTo("asset"),
+  TE.map(({asset}) => pipe(
+      getAssetByID(collibraClient)(asset.id),
+      TE.bindTo("collibraAsset"),
+  TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(asset.id)),
+      TE.map(({collibraAsset, collibraAttributes}) => assetAdapter({ ...collibraAsset, attributes: collibraAttributes}),
+  ),
+  TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
+      (err) => makeResult<Asset, AxiosError>(err.response?.status ?? 500, err),
+      (collibraAsset) => makeResult<Asset, AxiosError>(200, collibraAsset),
+  )
+))),
+) // eslint-disable-line
+context.res = {   // eslint-disable-line
+  status: res.status,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(isErrorResult(res) ? { error: (res.value as Error).message } : res.value),
 }
-
+}
 export default GetPopularAssets

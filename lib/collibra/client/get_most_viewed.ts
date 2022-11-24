@@ -3,7 +3,7 @@ import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
-export const getProductType = (client: AxiosInstance) => (offset: string, limit: string, isGuestExcluded: string) =>
+export const getMostViewed = (client: AxiosInstance) => (approvedStatusId: string, dataProductId: string, offset: string, limit: string, isGuestExcluded: string) =>
   pipe(
     TE.tryCatch(
       () =>
