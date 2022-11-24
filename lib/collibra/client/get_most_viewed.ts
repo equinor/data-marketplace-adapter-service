@@ -1,18 +1,16 @@
-import { AxiosInstance } from "axios"
+import { AxiosInstance, AxiosResponse } from "axios"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
-export const getMostViewed = (client: AxiosInstance) => (approvedStatusId: string, dataProductId: string, offset: string, limit: string, isGuestExcluded: string) =>
+export const getMostViewed = (client: Net.Client) => (offset: number, limit: number) =>
   pipe(
     TE.tryCatch(
       () =>
-        client.request<Collibra.PagedAssetTypeResponse>({
-          url: "/navigation/most_viewed",
+        client.get<AxiosResponse<Collibra.PagedNavigationStatisticResponse>>("/navigation/most_viewed", {
           params: new URLSearchParams({
-            offset: offset,
-            limit: limit,
-            isGuestExcluded: isGuestExcluded,
+            offset: offset.toString(),
+            limit: limit.toString(),
           }),
         }),
       E.toError
