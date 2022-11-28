@@ -73,7 +73,7 @@ jobs:
             az deployment group create \
             --name az-func-adapter-service-deploy \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME }} \
-            --template-file $GITHUB_WORKSPACE/ci/build-and-deploy/main.bicep \
+            --template-file $GITHUB_WORKSPACE/ci/build-and-deploy/adapter-service.bicep \
       - name: log-errors-to-slack 📄
         uses: act10ns/slack@v1
         with:
