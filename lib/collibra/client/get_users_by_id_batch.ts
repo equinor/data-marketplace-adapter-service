@@ -1,12 +1,12 @@
-import type { AxiosResponse } from "axios"
 import * as A from "fp-ts/Array"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
-type UsersResponse = AxiosResponse<Collibra.PagedUserResponse>
+import { Get } from "../../net/get"
+
 const getUsers = (client: Net.Client) => (params: URLSearchParams) =>
-  TE.tryCatch(() => client.get<UsersResponse>("/users", { params }), E.toError)
+  TE.tryCatch(() => Get<Collibra.PagedUserResponse>(client)("/users", { params }), E.toError)
 
 export const getUsersByIdBatch =
   (client: Net.Client) =>
@@ -21,5 +21,5 @@ export const getUsersByIdBatch =
       ),
       TE.mapLeft((err) => new Error(err)),
       TE.chain(getUsers(client)),
-      TE.map((res) => res.data.results)
+      TE.map(({ results }) => results)
     )

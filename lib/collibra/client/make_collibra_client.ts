@@ -1,14 +1,7 @@
-import axios, { type Axios, CreateAxiosDefaults } from "axios"
+import { makeNetClient } from "../../net/make_net_client"
 
-import { config } from "../../../config"
-
-export type RequesterFn<T> = (client: Axios) => (...args: any) => Promise<T>
-
-type ClientConfig = Omit<CreateAxiosDefaults, "url" | "baseURL" | "adapter">
-
-export const makeCollibraClient = (cfg: ClientConfig) => {
-  return axios.create({
-    ...cfg,
-    baseURL: config.COLLIBRA_BASE_URL,
+export const makeCollibraClient = (authorization: string) =>
+  makeNetClient({
+    baseURL: process.env.COLLIRBA_BASE_URL,
+    headers: { authorization },
   })
-}

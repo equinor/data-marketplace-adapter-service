@@ -13,7 +13,7 @@ import { makeResult } from "../lib/net/make_result"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
-  const collibraClient = makeCollibraClient({ headers: { authorization: req.headers.authorization } })
+  const collibraClient = makeCollibraClient(req.headers.authorization)
 
   const res = await pipe(
     getAssetByID(collibraClient)(id),
