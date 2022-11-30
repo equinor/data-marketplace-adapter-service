@@ -18,8 +18,6 @@ declare global {
 
     export interface Client {
       request: <T>(url: string, opts?: RequestOpts) => Promise<T>
-      get?: <T>(url: string, opts?: Omit<RequestOpts, "method" | "body">) => Promise<T>
-      post?: <T>(url: string, opts?: Omit<RequestOpts, "method">) => Promise<T>
     }
 
     type Result<T, E extends Error> = {
