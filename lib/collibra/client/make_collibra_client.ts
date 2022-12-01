@@ -1,8 +1,12 @@
 import { config } from "../../../config"
+import { Logger } from "../../logger"
 import { makeNetClient } from "../../net/make_net_client"
 
-export const makeCollibraClient = (authorization: string) =>
-  makeNetClient({
-    baseURL: config.COLLIBRA_BASE_URL,
-    headers: { authorization },
-  })
+export const makeCollibraClient = (authorization: string) => (logger: Logger) =>
+  makeNetClient(
+    {
+      baseURL: config.COLLIBRA_BASE_URL,
+      headers: { authorization },
+    },
+    logger
+  )

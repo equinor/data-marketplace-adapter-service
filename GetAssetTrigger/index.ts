@@ -8,12 +8,14 @@ import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
 import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { makeLogger } from "../lib/logger"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
-  const collibraClient = makeCollibraClient(req.headers.authorization)
+  const logger = makeLogger(context.log)
+  const collibraClient = makeCollibraClient(req.headers.authorization)(logger)
 
   const res = await pipe(
     getAssetByID(collibraClient)(id),
