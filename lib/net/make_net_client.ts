@@ -14,10 +14,8 @@ export const makeNetClient = (cfg: Net.ClientConfig): Net.Client => {
     request: async <T>(url: string, opts?: Net.RequestOpts): Promise<T> => {
       const _baseURL = new URL(trimTrailingSlash(cfg.baseURL))
       const _url = new URL(
-        _baseURL.pathname
-          ? `${_baseURL.pathname}/${trimLeftRightSlashes(url)}${opts.params ? `?${opts.params.toString()}` : ""}`
-          : `${trimLeftRightSlashes(url)}${opts.params ? `?${opts.params.toString()}` : ""}`,
-        _baseURL
+        trimLeftRightSlashes(url),
+        `${trimTrailingSlash(_baseURL.href)}/` // just to guarantee that the url has a trailing slash
       )
 
       const _opts = {
