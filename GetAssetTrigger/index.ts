@@ -25,7 +25,10 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       assetAdapter({ ...collibraAsset, attributes: collibraAttributes })
     ),
     TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
-      (err) => makeResult<Asset, AxiosError>(err.response?.status ?? 500, err),
+      (err) => {
+        logger.error(err)
+        return makeResult<Asset, AxiosError>(err.response?.status ?? 500, err)
+      },
       (collibraAsset) => makeResult<Asset, AxiosError>(200, collibraAsset)
     )
   )()

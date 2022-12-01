@@ -54,9 +54,12 @@ const GetMaintainersTrigger: AzureFunction = async function (context: Context, r
         TE.sequenceArray
       )
     ),
-    TE.match(
-      (err: AxiosError) => makeResult<readonly Maintainer[], AxiosError>(err.response?.status ?? 500, err),
-      (maintainers) => makeResult<readonly Maintainer[], AxiosError>(200, maintainers)
+    TE.match<AxiosError, Net.Result<Maintainer[], AxiosError>, Maintainer[]>(
+      (err) => {
+        logger.error(err)
+        return makeResult<Maintainer[], AxiosError>(err.response?.status ?? 500, err)
+      },
+      (maintainers) => makeResult<Maintainer[], AxiosError>(200, maintainers)
     )
   )()
 
