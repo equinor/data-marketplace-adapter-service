@@ -11,9 +11,13 @@ declare global {
       body: any
     }>
 
+    export type ClientConfig = Partial<{
+      baseURL: string
+      headers: Record<string, OutgoingHttpHeader>
+    }>
+
     export interface Client {
-      get<T>(url: string, opts?: Omit<RequestOpts, "method" | "body">): Promise<T>
-      post<T>(url: string, opts?: Omit<RequestOpts, "method">): Promise<T>
+      request: <T>(url: string, opts?: RequestOpts) => Promise<T>
     }
 
     type Result<T, E extends Error> = {

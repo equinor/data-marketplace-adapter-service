@@ -12,9 +12,7 @@ import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 
 const GetTermsAndConditionTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-  const collibraClient = makeCollibraClient({
-    headers: { authorization: req.headers.authorization },
-  })
+  const collibraClient = makeCollibraClient(req.headers.authorization)
 
   const { id } = context.bindingData
 

@@ -1,17 +1,17 @@
-import { AxiosInstance } from "axios"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
-import { pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/function"
 
-export const getAssetAttributes = (client: AxiosInstance) => (id: string) =>
+import { Get } from "../../net/get"
+
+export const getAssetAttributes = (client: Net.Client) => (id: string) =>
   pipe(
     TE.tryCatch(
       () =>
-        client.request<Collibra.PagedAttributeResponse>({
-          url: "/attributes",
+        Get<Collibra.PagedAttributeResponse>(client)("/attributes", {
           params: new URLSearchParams({ assetId: id }),
         }),
       E.toError
     ),
-    TE.map(({ data }) => data.results)
+    TE.map((res) => res.results)
   )
