@@ -1,35 +1,30 @@
-import { AxiosResponse } from "axios"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
-type RelationTypesResponse = AxiosResponse<Collibra.PagedRelationTypeResponse>
+import { Get } from "../../net/get"
+
 const getRelationTypes = (client: Net.Client) => () =>
-  client.get<RelationTypesResponse>("/relationTypes", {
+  Get<Collibra.PagedRelationTypeResponse>(client)("/relationTypes", {
     params: new URLSearchParams({
       sourceTypeName: "data product",
       targetTypeName: "rights-to-use",
     }),
   })
 
-type RelationsResponse = AxiosResponse<Collibra.PagedRelationResponse>
 const getRelations = (client: Net.Client, relationTypeID: string, id: string) => () =>
-  client.get<RelationsResponse>("/relations", {
+  Get<Collibra.PagedRelationResponse>(client)("/relations", {
     params: new URLSearchParams({
       relationTypeId: relationTypeID,
       sourceId: id,
     }),
   })
 
-type AssetResponse = AxiosResponse<Collibra.Asset>
-const getAsset = (client: Net.Client, id: string) => () => client.get<AssetResponse>(`/assets/${id}`)
+const getAsset = (client: Net.Client, id: string) => () => Get<Collibra.Asset>(client)(`/assets/${id}`)
 
 export const getRightsToUseAsset = (client: Net.Client) => (id: string) =>
   pipe(
     TE.tryCatch(getRelationTypes(client), E.toError),
-    TE.chain(({ data: relationTypesRes }) =>
-      TE.tryCatch(getRelations(client, relationTypesRes.results[0].id, id), E.toError)
-    ),
-    TE.chain(({ data: relationsRes }) => TE.tryCatch(getAsset(client, relationsRes.results[0].target.id), E.toError)),
-    TE.map(({ data }) => data)
+    TE.chain(({ results }) => TE.tryCatch(getRelations(client, results[0].id, id), E.toError)),
+    TE.chain(({ results }) => TE.tryCatch(getAsset(client, results[0].target.id), E.toError))
   )
