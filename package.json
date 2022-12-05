@@ -8,7 +8,7 @@
     "test": "jest",
     "build": "tsc --project ./tsconfig.build.json",
     "build:watch": "tsc --watch --project ./tsconfig.build.json",
-    "start": "func start",
+    "start": "node -r dotenv/config scripts/start.js",
     "dev": "npm-run-all --parallel build:watch start",
     "lint": "eslint \"**/*.{j,t}s\"",
     "format": "prettier --write \"**/*.{j,t}s\""
@@ -32,6 +32,7 @@
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
     "azure-functions-core-tools": "^4.0.4829",
+    "dotenv": "^16.0.3",
     "eslint": "^8.26.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^8.0.1",

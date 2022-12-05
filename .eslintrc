@@ -8,6 +8,9 @@
     "@typescript-eslint",
     "import"
   ],
+  "env": {
+    "node": true
+  },
   "root": true,
   "rules": {
     "import/order": ["error", { "newlines-between": "always", "alphabetize": { "order": "asc" } }]
@@ -16,7 +19,13 @@
     {
       "files": ["**/*.@(spec|int|test).{j,t}s"],
       "rules": {
-        "@typescript-eslint/ban-ts-comment": 1,
+        "@typescript-eslint/ban-ts-comment": 1
+      }
+    },
+    {
+      "files": ["scripts/**/*.js"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": 0
       }
     }
   ]
