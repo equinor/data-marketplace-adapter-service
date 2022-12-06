@@ -34,6 +34,7 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client
           },
           method: opts.method,
           data: opts.body,
+          params: opts.params,
         })
 
         logger.info(
