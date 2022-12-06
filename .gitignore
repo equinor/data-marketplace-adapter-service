@@ -53,3 +53,6 @@ __azurite_db*__.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# macOS
+.DS_Store
