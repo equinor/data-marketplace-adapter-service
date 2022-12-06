@@ -1,13 +1,14 @@
 import { Asset } from "@equinor/data-marketplace-models"
-import { AxiosResponse } from "axios"
+
+import { Get } from "../net/get"
 
 import { assetAdapter } from "./asset_adapter"
 
 export type AssetWithViews = Asset & { views: number }
 
-type NavStatsResponse = AxiosResponse<Collibra.PagedNavigationStatisticResponse>
-type AssetsResponse = AxiosResponse<Collibra.Asset>
-type AttributesResponse = AxiosResponse<Collibra.PagedAttributeResponse>
+type NavStatsResponse = Collibra.PagedNavigationStatisticResponse
+type AssetsResponse = Collibra.Asset
+type AttributesResponse = Collibra.PagedAttributeResponse
 
 // TODO: Refactor this to fp-ts
 export const getMostViewedDataProducts =
@@ -21,7 +22,7 @@ export const getMostViewedDataProducts =
   ): Promise<AssetWithViews[]> => {
     // get navigation statistics
     // (this tells us which assets are the all time most viewed assets)
-    const stats = await client.get<NavStatsResponse>("/navigation/most_viewed", {
+    const stats = await Get<NavStatsResponse>(client)("/navigation/most_viewed", {
       params: new URLSearchParams({
         offset: String(offset * limit),
         limit: String(limit),
@@ -31,37 +32,33 @@ export const getMostViewedDataProducts =
     // for each navigation statistic,
     // get asset data
     const popularAssets = await Promise.all(
-      stats.data.results.map((stat) => client.get<AssetsResponse>(`/assets/${stat.assetId}`))
+      stats.results.map((stat) => Get<AssetsResponse>(client)(`/assets/${stat.assetId}`))
     )
 
     // filter out unapproved assets
     // that are not data product types
     const approvedDataProducts = popularAssets.filter(
-      ({ data: asset }) => asset.status.id === approvedStatusID && asset.type.id === dataProductTypeID
+      (asset) => asset.status.id === approvedStatusID && asset.type.id === dataProductTypeID
     )
 
     // get attributes for approved data products
     const attributes = await Promise.all(
-      approvedDataProducts.map(({ data: asset }) =>
-        client.get<AttributesResponse>("/attributes", {
+      approvedDataProducts.map((asset) =>
+        Get<AttributesResponse>(client)("/attributes", {
           params: new URLSearchParams({ assetId: asset.id }),
         })
       )
     )
 
     // run assets through asset adapter
-    const assetsWithViews: AssetWithViews[] = approvedDataProducts.map(({ data: asset }, i) => ({
-      ...assetAdapter({ ...asset, attributes: attributes[i].data.results }),
-      views: stats.data.results.find((stat) => stat.assetId === asset.id).numberOfViews ?? 0,
+    const assetsWithViews: AssetWithViews[] = approvedDataProducts.map((asset, i) => ({
+      ...assetAdapter({ ...asset, attributes: attributes[i].results }),
+      views: stats.results.find((stat) => stat.assetId === asset.id).numberOfViews ?? 0,
     }))
 
-    return assets.length >= limit
-      ? assets.slice(0, limit)
-      : getMostViewedDataProducts(client)(
-          [...assets, ...assetsWithViews],
-          limit,
-          offset + 1,
-          approvedStatusID,
-          dataProductTypeID
-        )
+    const result = [...assets, ...assetsWithViews]
+
+    return result.length >= limit
+      ? result.slice(0, limit)
+      : getMostViewedDataProducts(client)(result, limit, offset + 1, approvedStatusID, dataProductTypeID)
   }
