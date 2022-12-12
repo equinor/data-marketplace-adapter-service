@@ -5,8 +5,10 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "assets/{id}/terms",
-      "methods": ["get"]
+      "route": "lists/popular",
+      "methods": [
+        "get"
+      ]
     },
     {
       "type": "http",
@@ -14,5 +16,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/GetTermsAndConditionsTrigger/index.js"
+  "scriptFile": "../dist/GetPopularAssetTrigger/index.js"
 }

@@ -1,13 +1,17 @@
-import { RequesterFn } from "./make_collibra_client"
+import * as E from "fp-ts/Either"
+import * as TE from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/function"
 
-export const getAssetAttributes: RequesterFn<Collibra.Attribute[]> = (client) => async (id: string) => {
-  const {
-    data: { results },
-  } = await client.get<Collibra.PagedAttributeResponse>(`/attributes`, {
-    params: {
-      assetId: id,
-    },
-  })
+import { Get } from "../../net/get"
 
-  return results
-}
+export const getAssetAttributes = (client: Net.Client) => (id: string) =>
+  pipe(
+    TE.tryCatch(
+      () =>
+        Get<Collibra.PagedAttributeResponse>(client)("/attributes", {
+          params: new URLSearchParams({ assetId: id }),
+        }),
+      E.toError
+    ),
+    TE.map((res) => res.results)
+  )

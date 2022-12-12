@@ -1,89 +1,44 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import axios, { AxiosError } from "axios"
-import type { Asset } from "@equinor/data-marketplace-models"
-import { config } from "../config"
-import { htmlToPortableText } from "../lib/html_to_portable_text"
+import { Asset } from "@equinor/data-marketplace-models"
+import { AxiosError } from "axios"
+import * as TE from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/function"
+
+import { assetAdapter } from "../lib/collibra/asset_adapter"
+import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
+import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { makeLogger } from "../lib/logger"
+import { isErrorResult } from "../lib/net/is_error_result"
+import { makeResult } from "../lib/net/make_result"
 
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
+  const logger = makeLogger(context.log)
+  const collibraClient = makeCollibraClient(req.headers.authorization)(logger)
 
-  try {
-    const { data: collibraAsset } = await axios.get(`${config.COLLIBRA_BASE_URL}/assets/${id}`, {
-      headers: {
-        authorization: req.headers.authorization,
+  const res = await pipe(
+    getAssetByID(collibraClient)(id),
+    TE.bindTo("collibraAsset"),
+    TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),
+    TE.map(({ collibraAsset, collibraAttributes }) =>
+      assetAdapter({ ...collibraAsset, attributes: collibraAttributes })
+    ),
+    TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
+      (err) => {
+        logger.error(err)
+        return makeResult<Asset, AxiosError>(err.response?.status ?? 500, err)
       },
-    })
+      (collibraAsset) => makeResult<Asset, AxiosError>(200, collibraAsset)
+    )
+  )()
 
-    const asset: Asset = {
-      createdAt: new Date(collibraAsset.createdOn),
-      description: [],
-      excerpt: [],
-      id: collibraAsset.id,
-      provider: {
-        id: "",
-        name: "Collibra",
-      },
-      qualityScore: 0,
-      rating: 0,
-      tags: [],
-      type: {
-        id: collibraAsset.type.id,
-        name: collibraAsset.type.name,
-      },
-      updatedAt: new Date(collibraAsset.lastModifiedOn),
-      updateFrequency: [],
-    }
-
-    const { data: collibraTags } = await axios.get<any[]>(`${config.COLLIBRA_BASE_URL}/tags/asset/${id}`, {
-      headers: {
-        authorization: req.headers.authorization,
-      },
-    })
-
-    asset.tags = collibraTags?.map((tag) => ({ id: tag.id, label: tag.name })) ?? []
-
-    const { data: collibraAttrs } = await axios.get<{ results: any[] }>(`${config.COLLIBRA_BASE_URL}/attributes`, {
-      headers: {
-        authorization: req.headers.authorization,
-      },
-      params: {
-        assetId: id,
-      },
-    })
-
-    const descriptionAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Description")?.value
-    if (descriptionAttrValue) {
-      asset.description = htmlToPortableText(descriptionAttrValue)
-    }
-
-    const timelinessAttrValue = collibraAttrs.results.find((attr) => attr.type.name === "Timeliness")?.value
-    if (timelinessAttrValue) {
-      asset.updateFrequency = htmlToPortableText(timelinessAttrValue)
-    }
-
-    context.res = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(asset),
-    }
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      context.log(`Request to ${e.config.url} failed with status code ${e.response.status}`)
-      context.log(e.response.data)
-    } else {
-      context.log(e)
-    }
-
-    context.res = {
-      status: e.response?.status ?? 500,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        error: e.message,
-      }),
-    }
+  context.res = {
+    status: res.status,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(isErrorResult(res) ? { error: (res.value as Error).message } : res.value),
   }
 }
 

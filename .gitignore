@@ -46,3 +46,10 @@ __pycache__/
 __blobstorage__
 __queuestorage__
 __azurite_db*__.json
+
+### VisualStudioCode ###
+.vscode/**/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

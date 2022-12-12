@@ -1,5 +1,6 @@
 import type { RightsToUse } from "@equinor/data-marketplace-models"
 import type { Attribute } from "@equinor/data-marketplace-models/types/Attribute"
+
 import { htmlToPortableText } from "../html_to_portable_text"
 
 export const rightsToUseAdapter = (asset: Collibra.AssetWithAttributes): RightsToUse => {
