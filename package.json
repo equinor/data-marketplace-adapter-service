@@ -47,7 +47,7 @@
   "dependencies": {
     "@sanity/block-tools": "^2.35.0",
     "@sanity/schema": "^2.35.0",
-    "axios": "^1.2.0",
+    "axios": "^1.2.1",
     "fp-ts": "^2.13.1",
     "jsdom": "^20.0.3",
     "xss": "^1.0.14"
