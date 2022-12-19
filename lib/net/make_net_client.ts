@@ -26,7 +26,7 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client
       }
 
       try {
-        const { data, status, statusText } = await axios.request<T>({
+        const { data, status, statusText, config } = await axios.request<T>({
           url: _url.toString(),
           headers: {
             ...cfg.headers,
@@ -38,7 +38,9 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client
         })
 
         logger.info(
-          `[client.request] ${_opts.method} request to ${_url.toString()} responded with ${status} (${statusText})`
+          `[client.request] ${config.method} request to ${
+            config.params ? `${config.url}?${config.params.toString()}` : config.url
+          } responded with ${status} (${statusText})`
         )
 
         return data
