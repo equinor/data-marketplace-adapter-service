@@ -1,4 +1,4 @@
-name: Build and deploy
+name: Build and deploy to test environment
 on:
   workflow_dispatch:
   push:
@@ -6,8 +6,8 @@ on:
       - main
 env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  AZURE_RESOURCE_GROUP_NAME: "rg-datamarketplace"
-  AZURE_FUNCTIONAPP_NAME: "data-marketplace-adapter-service"
+  AZURE_RESOURCE_GROUP_NAME: "rg-datamarketplace-test"
+  AZURE_FUNCTIONAPP_NAME: "func-datamarketplace-test"
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "${{ github.workspace }}/"
   BUILD_OUTPUT_PATH: ${{ github.workspace }}/
   BUILD_PACKAGE_NAME: adapters.zip
@@ -74,6 +74,7 @@ jobs:
             --name az-func-adapter-service-deploy \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME }} \
             --template-file $GITHUB_WORKSPACE/ci/build-and-deploy/adapter-service.bicep \
+            --parameters "{ \"azureEnvironment\": { \"value\": \"test\" } }"
       - name: log-errors-to-slack 📄
         uses: act10ns/slack@v1
         with:
