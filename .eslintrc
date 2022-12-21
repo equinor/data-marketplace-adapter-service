@@ -18,6 +18,10 @@
   "overrides": [
     {
       "files": ["**/*.@(spec|int|test).{j,t}s"],
+      "env": {
+        "node": true,
+        "jest": true
+      },
       "rules": {
         "@typescript-eslint/ban-ts-comment": 1
       }

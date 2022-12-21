@@ -1,9 +1,9 @@
 import type { JestConfigWithTsJest } from "ts-jest"
 
 export default {
-  preset: "ts-jest",
+  preset: "ts-jest/presets/js-with-ts",
   testEnvironment: "node",
-  testMatch: ["**/*.@(spec|int|test).ts"],
+  testMatch: ["**/*.@(spec|int|test).{j,t}s"],
   transform: {
     "\\.ts?$": [
       "ts-jest",
