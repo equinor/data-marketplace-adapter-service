@@ -1,4 +1,4 @@
-name: Build and deploy to test environment
+name: Build and deploy to production environment
 on:
   workflow_dispatch:
 env:
