@@ -1,3 +1,4 @@
+import { mapOpenApi3_1 as openApi } from "@aaronpowell/azure-functions-nodejs-openapi"
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { Asset } from "@equinor/data-marketplace-models"
 import { AxiosError } from "axios"
@@ -42,4 +43,38 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
   }
 }
 
-export default GetAssetTrigger
+export default openApi(GetAssetTrigger, "assets/{id}", {
+  get: {
+    parameters: [
+      {
+        name: "id",
+        in: "path",
+        required: true,
+        description: "Gets asset",
+        schema: {
+          type: "string",
+        },
+      },
+    ],
+    responses: {
+      "200": {
+        description: "Successful operation",
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              allOf: [
+                {
+                  $ref: "#/components/schemas/Asset",
+                },
+              ],
+            },
+          },
+        },
+      },
+      "404": {
+        description: "Unable to find a game with that id",
+      },
+    },
+  },
+})
