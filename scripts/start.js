@@ -7,6 +7,7 @@ const { AppConfigurationClient } = require("@azure/app-configuration")
 
 const { camelCaseToSnakeCase } = require("./lib/camel_case_to_snake_case")
 const { getMissingEnvVars } = require("./lib/get_missing_env_vars")
+const { shouldSnakeCase } = require("./lib/should_snake_case")
 
 const CONNECTION_STRING = process.env.AZURE_APP_CONFIG_CONNECTION_STRING
 
@@ -24,7 +25,8 @@ const main = async () => {
   const appConfig = appConfigClient.listConfigurationSettings()
 
   for await (const setting of appConfig) {
-    process.env[camelCaseToSnakeCase(setting.key).toUpperCase()] = setting.value
+    const key = shouldSnakeCase(setting.key) ? camelCaseToSnakeCase(setting.key) : setting.key
+    process.env[key.toUpperCase()] = setting.value
   }
 
   // required at this point so that config is evaluated
