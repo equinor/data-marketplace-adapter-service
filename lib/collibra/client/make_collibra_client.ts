@@ -7,7 +7,7 @@ export const makeCollibraClient = (authorization: string) => (logger: Logger) =>
 
   return makeNetClient(
     {
-      baseURL: config.COLLIBRA_API_URL,
+      baseURL: `${config.COLLIBRA_BASE_URL}`,
       headers: { authorization },
     },
     logger

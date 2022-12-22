@@ -7,9 +7,9 @@ const { AppConfigurationClient } = require("@azure/app-configuration")
 
 const { camelCaseToSnakeCase } = require("./lib/camel_case_to_snake_case")
 const { getMissingEnvVars } = require("./lib/get_missing_env_vars")
+const { shouldSnakeCase } = require("./lib/should_snake_case")
 
 const CONNECTION_STRING = process.env.AZURE_APP_CONFIG_CONNECTION_STRING
-const isProd = process.env.NODE_ENV === "production"
 
 if (!CONNECTION_STRING) {
   console.error("\x1b[1;31mERROR: Missing required enviroment variable: AZURE_APP_CONFIG_CONNECTION_STRING\x1b[0m")
@@ -22,12 +22,11 @@ const main = async () => {
   const appConfigClient = new AppConfigurationClient(CONNECTION_STRING)
 
   console.log("INFO: Getting app configuration")
-  const appConfig = appConfigClient.listConfigurationSettings({
-    labelFilter: isProd ? "production" : "test",
-  })
+  const appConfig = appConfigClient.listConfigurationSettings()
 
   for await (const setting of appConfig) {
-    process.env[camelCaseToSnakeCase(setting.key).toUpperCase()] = setting.value
+    const key = shouldSnakeCase(setting.key) ? camelCaseToSnakeCase(setting.key) : setting.key
+    process.env[key.toUpperCase()] = setting.value
   }
 
   // required at this point so that config is evaluated
