@@ -7,7 +7,9 @@ import { pipe } from "fp-ts/function"
 import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
 import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
+import { determineAssetStatus } from "../lib/collibra/determine_asset_status"
 import { makeLogger } from "../lib/logger"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
@@ -20,9 +22,13 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
   const res = await pipe(
     getAssetByID(collibraClient)(id),
     TE.bindTo("collibraAsset"),
+    TE.bind("approvedStatus", () => getStatusByName(collibraClient)("Approved")),
+    TE.bind("approvedAsset", ({ approvedStatus, collibraAsset }) =>
+      TE.fromEither(determineAssetStatus(approvedStatus.name)(collibraAsset))
+    ),
     TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),
-    TE.map(({ collibraAsset, collibraAttributes }) =>
-      assetAdapter({ ...collibraAsset, attributes: collibraAttributes })
+    TE.map(({ approvedAsset, collibraAttributes }) =>
+      assetAdapter({ ...approvedAsset, attributes: collibraAttributes })
     ),
     TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
       (err) => {
