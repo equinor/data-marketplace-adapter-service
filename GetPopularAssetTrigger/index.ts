@@ -14,7 +14,7 @@ import { makeResult } from "../lib/net/make_result"
 
 const GetPopularAssets: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
-  const collibraClient = makeCollibraClient(req.headers.authorization)(logger)
+  const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
 
   const limit = Number.isNaN(Number(req.query.limit)) ? 10 : Number(req.query.limit)
 

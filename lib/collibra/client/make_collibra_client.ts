@@ -1,15 +1,12 @@
-import { config } from "../../../config"
+import { getConfigValue } from "../../../config"
 import { Logger } from "../../logger"
 import { makeNetClient } from "../../net/make_net_client"
 
-export const makeCollibraClient = (authorization: string) => (logger: Logger) => {
-  console.log(config)
-
-  return makeNetClient(
+export const makeCollibraClient = (authorization: string) => async (logger: Logger) =>
+  makeNetClient(
     {
-      baseURL: `${config.COLLIBRA_BASE_URL}/rest/2.0`,
+      baseURL: `${await getConfigValue("COLLIBRA_BASE_URL")}/rest/2.0`,
       headers: { authorization },
     },
     logger
   )
-}
