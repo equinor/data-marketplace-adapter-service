@@ -2,11 +2,11 @@
 
 ## Getting started
 
-### Important note on environment variables
+### Environment variables
 
-Although the common practice when dealing with environment variables in an Azure Functions app is to set them in `local.settings.json`, for the `scripts/start.js` script to correclty validate your enviroment variables locally, your enviroment variables need to be set in a `.env` file.
+Add your environment variables to `local.settings.json`.
 
-Please copy the `.env.example` file and make your necessary updates: `cp .env.example .env`
+Remember that new environment variables need to be added to the pipeline, so please notify the team about when adding new environment variables.
 
 ### 1. Clone the repository and install dependencies
 
