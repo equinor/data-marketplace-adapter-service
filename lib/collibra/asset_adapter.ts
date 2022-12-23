@@ -21,6 +21,7 @@ export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attr
     description: attrs.description ? htmlToPortableText(attrs.description.value) : [],
     excerpt: attrs["additional information"] ? htmlToPortableText(attrs["additional information"].value) : [],
     id: asset.id,
+    name: asset.name,
     provider: {
       id: "",
       name: "Collibra",
