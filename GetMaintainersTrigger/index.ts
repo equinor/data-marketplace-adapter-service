@@ -1,6 +1,5 @@
 import type { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { Maintainer } from "@equinor/data-marketplace-models/types/Maintainer"
-import { AxiosError } from "axios"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
@@ -12,8 +11,10 @@ import { getUsersByIdBatch } from "../lib/collibra/client/get_users_by_id_batch"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { filterResponsibilitiesByGroups } from "../lib/collibra/filter_responsibilities_by_groups"
 import { makeLogger } from "../lib/logger"
+import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
+import { toNetErr } from "../lib/net/to_net_err"
 
 const GetMaintainersTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
@@ -26,6 +27,7 @@ const GetMaintainersTrigger: AzureFunction = async function (context: Context, r
     TE.map((responsibilities) => TE.fromEither(filterResponsibilitiesByGroups(groups)(responsibilities))),
     TE.flatten,
     TE.bindTo("responsibilities"),
+    TE.mapLeft((err) => toNetErr(400)(err.message)),
     // get users by ids
     TE.bind("users", ({ responsibilities }) =>
       pipe(
@@ -54,12 +56,13 @@ const GetMaintainersTrigger: AzureFunction = async function (context: Context, r
         TE.sequenceArray
       )
     ),
-    TE.match<AxiosError, Net.Result<Maintainer[], AxiosError>, Maintainer[]>(
+    TE.mapLeft((err) => toNetErr(500)(err.message)),
+    TE.match(
       (err) => {
         logger.error(err)
-        return makeResult<Maintainer[], AxiosError>(err.response?.status ?? 500, err)
+        return makeResult<readonly Maintainer[], NetError>(err.status ?? 500, err)
       },
-      (maintainers) => makeResult<Maintainer[], AxiosError>(200, maintainers)
+      (maintainers) => makeResult<readonly Maintainer[], NetError>(200, maintainers)
     )
   )()
 
