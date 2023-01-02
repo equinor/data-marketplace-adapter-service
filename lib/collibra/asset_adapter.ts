@@ -18,8 +18,8 @@ export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attr
 
   return {
     createdAt: new Date(asset.createdOn),
-    description: attrs.description ? htmlToPortableText(attrs.description.value) : [],
-    excerpt: attrs["additional information"] ? htmlToPortableText(attrs["additional information"].value) : [],
+    description: attrs["additional information"] ? htmlToPortableText(attrs["additional information"].value) : [],
+    excerpt: attrs.description ? htmlToPortableText(attrs.description.value) : [],
     id: asset.id,
     name: asset.name,
     provider: {
