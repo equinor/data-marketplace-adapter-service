@@ -1,6 +1,5 @@
 import type { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import type { AxiosError } from "axios"
-import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
@@ -9,8 +8,10 @@ import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { AssetWithViews, getMostViewedDataProducts } from "../lib/collibra/get_most_viewed_data_products"
 import { makeLogger } from "../lib/logger"
+import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
+import { toNetErr } from "../lib/net/to_net_err"
 
 const GetPopularAssets: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
@@ -25,16 +26,16 @@ const GetPopularAssets: AzureFunction = async function (context: Context, req: H
     TE.chain(({ approvedStatus, dataProductType }) =>
       TE.tryCatch(
         () => getMostViewedDataProducts(collibraClient)([], limit, 0, approvedStatus.id, dataProductType.id),
-        E.toError
+        (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
       )
     ),
     TE.map((assets) => assets.sort((a, b) => (a.views > b.views ? -1 : 1))),
-    TE.match<AxiosError, Net.Result<AssetWithViews[], AxiosError>, AssetWithViews[]>(
+    TE.match(
       (err) => {
         console.error("[GetPopularAssets]", err)
-        return makeResult<AssetWithViews[], AxiosError>(err.response?.status ?? 500, err)
+        return makeResult<AssetWithViews[], NetError>(err.status ?? 500, err)
       },
-      (assets) => makeResult<AssetWithViews[], AxiosError>(200, assets)
+      (assets) => makeResult<AssetWithViews[], NetError>(200, assets)
     )
   )()
 

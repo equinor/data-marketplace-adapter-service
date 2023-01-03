@@ -1,6 +1,5 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { Asset } from "@equinor/data-marketplace-models"
-import { AxiosError } from "axios"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
@@ -11,6 +10,7 @@ import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { determineAssetStatus } from "../lib/collibra/determine_asset_status"
 import { makeLogger } from "../lib/logger"
+import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 
@@ -30,12 +30,12 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     TE.map(({ approvedAsset, collibraAttributes }) =>
       assetAdapter({ ...approvedAsset, attributes: collibraAttributes })
     ),
-    TE.match<AxiosError, Net.Result<Asset, AxiosError>, Asset>(
+    TE.match(
       (err) => {
         logger.error(err)
-        return makeResult<Asset, AxiosError>(err.response?.status ?? 500, err)
+        return makeResult<Asset, NetError>(err.status ?? 500, err)
       },
-      (collibraAsset) => makeResult<Asset, AxiosError>(200, collibraAsset)
+      (collibraAsset) => makeResult<Asset, NetError>(200, collibraAsset)
     )
   )()
 
