@@ -29,6 +29,8 @@
     "@types/jest": "^29.2.2",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.11.2",
+    "@types/swagger-jsdoc": "^6.0.1",
+    "@types/swagger-ui-react": "^4.11.0",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
     "azure-functions-core-tools": "^4.0.4829",
@@ -51,6 +53,10 @@
     "axios": "^1.2.1",
     "fp-ts": "^2.13.1",
     "jsdom": "^20.0.3",
+    "next-swagger-doc": "^0.3.6",
+    "swagger-jsdoc": "^6.2.7",
+    "swagger-ui-dist": "^4.15.5",
+    "swagger-ui-react": "^4.15.5",
     "xss": "^1.0.14"
   }
 }
