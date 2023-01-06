@@ -35,9 +35,9 @@ export const rightsToUseAdapter = (asset: Collibra.AssetWithAttributes): RightsT
       ? {
           createdAt: new Date(termsAttr.createdOn),
           id: termsAttr.id,
-          name: "",
+          name: termsAttr.type.name,
           updatedAt: new Date(termsAttr.lastModifiedOn),
-          value: termsAttr.value as string,
+          value: termsAttr.value ? htmlToPortableText(termsAttr.value) : [],
         }
       : emptyAttr,
   }
