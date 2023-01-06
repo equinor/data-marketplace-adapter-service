@@ -12,7 +12,8 @@ npm i
 
 ### 2. Add environment variables
 
-Add your environment variables to `local.settings.json`. Use `local.settings.template.json` as a guide.
+Add your environment variables to `local.settings.json`. Use `local.settings.template.json` as a guide. Pay
+attention to that the environment variables are defined inside the `Values` object!
 
 Remember that new environment variables need to be added to the pipeline, so please notify the team about when adding new environment variables.
 
