@@ -16,6 +16,16 @@ import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 import { toNetErr } from "../lib/net/to_net_err"
 
+/**
+ * @openapi
+ * /assets/{id}/maintainers:
+ *   get:
+ *     description: Get asset maintainers
+ *     responses:
+ *       200:
+ *         description: Returns details for asset maintainers.
+ */
+
 const GetMaintainersTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
