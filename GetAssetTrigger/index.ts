@@ -16,7 +16,7 @@ import { makeResult } from "../lib/net/make_result"
 
 /**
  * @openapi
- * /assets/{id}:
+ * /api/assets/{id}:
  *   get:
  *     description: API to get assets
  *     responses:

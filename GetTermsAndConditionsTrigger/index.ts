@@ -14,7 +14,7 @@ import { makeResult } from "../lib/net/make_result"
 
 /**
  * @openapi
- * /assets/{id}/terms:
+ * /api/assets/{id}/terms:
  *   get:
  *     description: API to get terms and conditions
  *     responses:

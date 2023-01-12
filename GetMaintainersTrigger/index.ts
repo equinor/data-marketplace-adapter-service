@@ -18,7 +18,7 @@ import { toNetErr } from "../lib/net/to_net_err"
 
 /**
  * @openapi
- * /assets/{id}/maintainers:
+ * /api/assets/{id}/maintainers:
  *   get:
  *     description: Get asset maintainers
  *     responses:

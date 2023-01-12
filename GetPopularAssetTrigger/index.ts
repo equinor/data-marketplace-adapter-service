@@ -15,7 +15,7 @@ import { toNetErr } from "../lib/net/to_net_err"
 
 /**
  * @openapi
- * /lists/popular:
+ * /api/lists/popular:
  *   get:
  *     description: API to get popular assets!
  *     responses:
