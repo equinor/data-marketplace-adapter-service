@@ -1,8 +1,13 @@
 import type { Asset } from "@equinor/data-marketplace-models"
+import { toPlainText } from "@portabletext/toolkit"
 
 import { htmlToPortableText } from "../html_to_portable_text"
 
 const ATTRIBUTE_NAMES = ["additional information", "description", "timeliness"]
+
+const isEmpty = (value?: string) => {
+  return !value || !value.replace("--", "") || !toPlainText(htmlToPortableText(value)).replace("--", "").trim()
+}
 
 export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attribute[] }): Asset => {
   const attrs = asset.attributes.reduce((map, attr) => {
@@ -18,8 +23,10 @@ export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attr
 
   return {
     createdAt: new Date(asset.createdOn),
-    description: attrs["additional information"] ? htmlToPortableText(attrs["additional information"].value) : [],
-    excerpt: attrs.description ? htmlToPortableText(attrs.description.value) : [],
+    excerpt: !isEmpty(attrs.description?.value) ? htmlToPortableText(attrs.description.value) : null,
+    description: !isEmpty(attrs["additional information"]?.value)
+      ? htmlToPortableText(attrs["additional information"].value)
+      : null,
     id: asset.id,
     name: asset.name,
     provider: {
@@ -34,6 +41,6 @@ export const assetAdapter = (asset: Collibra.Asset & { attributes: Collibra.Attr
       name: asset.type.name,
     },
     updatedAt: new Date(asset.lastModifiedOn),
-    updateFrequency: attrs.timeliness ? htmlToPortableText(attrs.timeliness.value) : [],
+    updateFrequency: !isEmpty(attrs.timeliness?.value) ? htmlToPortableText(attrs.timeliness.value) : null,
   }
 }

@@ -7,5 +7,5 @@ import * as E from "fp-ts/Either"
  */
 export const determineAssetStatus = (statusName: string) => (asset: Collibra.Asset) =>
   statusName.toLowerCase() !== asset.status.name.toLowerCase()
-    ? E.left(new Error(`Expected ${asset.id} to have status ${statusName}, but got ${asset.status}`))
+    ? E.left(new Error(`Expected ${asset.id} to have status ${statusName}, but got ${asset.status.name}`))
     : E.right(asset)

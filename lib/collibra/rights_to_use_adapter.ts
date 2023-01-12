@@ -21,7 +21,7 @@ export const rightsToUseAdapter = (asset: Collibra.AssetWithAttributes): RightsT
     name: asset.name.trim(),
     createdAt: new Date(asset.createdOn),
     updatedAt: new Date(asset.lastModifiedOn),
-    description: descriptionAttr ? htmlToPortableText(descriptionAttr.value) : [],
+    description: descriptionAttr ? htmlToPortableText(descriptionAttr.value) : null,
     authURL: authURLattr
       ? {
           createdAt: new Date(authURLattr.createdOn),
@@ -35,9 +35,9 @@ export const rightsToUseAdapter = (asset: Collibra.AssetWithAttributes): RightsT
       ? {
           createdAt: new Date(termsAttr.createdOn),
           id: termsAttr.id,
-          name: "",
+          name: termsAttr.type.name,
           updatedAt: new Date(termsAttr.lastModifiedOn),
-          value: termsAttr.value as string,
+          value: termsAttr.value ? htmlToPortableText(termsAttr.value) : null,
         }
       : emptyAttr,
   }
