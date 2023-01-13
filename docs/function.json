@@ -5,7 +5,7 @@
         "type": "httpTrigger",
         "direction": "in",
         "name": "req",
-        "route": "docs/spec.json",
+        "route": "docs/spec.json  ",
         "methods": ["get"]
       },
       {
