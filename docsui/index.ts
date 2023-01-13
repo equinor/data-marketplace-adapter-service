@@ -10,7 +10,7 @@ const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise
     if (filename === "swagger-initializer.js") {
       return file
         .toString()
-        .replace('url: "https://petstore.swagger.io/v2/swagger.json"', 'url: window.origin + "/api/Doc"')
+        .replace('url: "https://petstore.swagger.io/v2/swagger.json"', 'url: window.origin + "/api/docs/spec.json"')
     }
     return file
   })
