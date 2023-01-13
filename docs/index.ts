@@ -19,7 +19,6 @@ const swaggerJsdoc: AzureFunction = async function (context: Context): Promise<v
   }
 
   context.res = {
-    status: 200,
     headers: {
       "Content-Type": "application/json",
     },
