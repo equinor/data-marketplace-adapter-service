@@ -4,8 +4,17 @@ import { AzureFunction, Context } from "@azure/functions"
 import { getAbsoluteFSPath } from "swagger-ui-dist"
 
 const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise<void> {
-  let filename = context.bindingData.filename
-  filename = filename || "index.html"
+  const { filename } = context.bindingData
+  if (filename == null) {
+    context.res = {
+      headers: {
+        location: `${context.req.url}${context.req.url.endsWith("/") ? "" : "/"}index.htm`,
+      },
+      status: 308,
+    }
+    return
+  }
+
   const body = await fs.readFile(getAbsoluteFSPath() + "/" + filename).then((file) => {
     if (filename === "swagger-initializer.js") {
       return file
