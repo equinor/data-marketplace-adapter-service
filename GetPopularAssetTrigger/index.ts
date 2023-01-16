@@ -13,6 +13,16 @@ import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 import { toNetErr } from "../lib/net/to_net_err"
 
+/**
+ * @openapi
+ * /api/lists/popular:
+ *   get:
+ *     description: API to get popular assets!
+ *     responses:
+ *       200:
+ *         description: Returns popular assets based on most viewed
+ */
+
 const GetPopularAssets: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)

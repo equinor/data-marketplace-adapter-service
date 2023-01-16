@@ -15,6 +15,15 @@ import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 import { toNetErr } from "../lib/net/to_net_err"
 
+/**
+ * @openapi
+ * /api/assets/{id}:
+ *   get:
+ *     description: API to get assets
+ *     responses:
+ *       200:
+ *         description: Returns assets matching the given search criteria
+ */
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData
   const logger = makeLogger(context.log)
