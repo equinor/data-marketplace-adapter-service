@@ -32,3 +32,8 @@ Example: `ah-123-some-feature`.
 ### 5. Create a pull request
 
 Once you've committed your changes, create a pull request to the appropriate branch; more often than not, this will be `main`.
+
+### 6. API Documentation
+
+After start of application on your  localhost , you can find API documentation at below URL:
+http://localhost:7071/api/docs/index.html
