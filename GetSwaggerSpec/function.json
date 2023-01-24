@@ -14,6 +14,5 @@
         "name": "res"
       }
     ],
-    "scriptFile": "../dist/GetApiDocs/index.js"
+    "scriptFile": "../dist/GetSwaggerSpec/index.js"
   }
-  
