@@ -19,10 +19,20 @@ import { toNetErr } from "../lib/net/to_net_err"
  * @openapi
  * /api/assets/{id}:
  *   get:
- *     description: API to get assets
+ *     summary: Get an Asset by a given ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *           required: true
+ *           description: A valid UUID for the Asset.
  *     responses:
  *       200:
- *         description: Returns assets matching the given search criteria
+ *         description: Returns an Asset given a valid UUID.
+ *       404:
+ *         description: The Asset could not be found.
  */
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const { id } = context.bindingData

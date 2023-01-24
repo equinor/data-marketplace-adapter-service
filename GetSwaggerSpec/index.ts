@@ -1,9 +1,9 @@
 import { AzureFunction, Context } from "@azure/functions"
-import Jsdoc from "swagger-jsdoc"
+import JSDoc from "swagger-jsdoc"
 
 const swaggerJsdoc: AzureFunction = async function (context: Context): Promise<void> {
-  const options = {
-    swaggerDefinition: {
+  const options: JSDoc.OAS3Options = {
+    definition: {
       openapi: "3.0.0",
       info: {
         title: "Data MarketPlace API",
@@ -22,7 +22,7 @@ const swaggerJsdoc: AzureFunction = async function (context: Context): Promise<v
     headers: {
       "Content-Type": "application/json",
     },
-    body: Jsdoc(options),
+    body: JSDoc(options),
   }
 }
 
