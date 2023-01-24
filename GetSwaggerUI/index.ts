@@ -3,12 +3,14 @@ import { promises as fs } from "fs"
 import { AzureFunction, Context } from "@azure/functions"
 import { getAbsoluteFSPath } from "swagger-ui-dist"
 
+import { trimTrailingSlash } from "../lib/url/trim_slashes"
+
 const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise<void> {
   const { filename } = context.bindingData
   if (filename == null) {
     context.res = {
       headers: {
-        location: `${context.req.url}${context.req.url.endsWith("/") ? "" : "/"}index.htm`,
+        location: `${trimTrailingSlash(context.req.url)}/index.html`,
       },
       status: 308,
     }
@@ -24,10 +26,7 @@ const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise
     return file
   })
 
-  context.res = {
-    headers: {},
-    body: body,
-  }
+  context.res = { body }
 }
 
 export default swaggerJsdocUI

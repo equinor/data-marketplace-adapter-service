@@ -1,15 +1,11 @@
 import axios from "axios"
-import { pipe } from "fp-ts/lib/function"
 
 import { Logger } from "../logger"
+import { trimLeftRightSlashes, trimTrailingSlash } from "../url/trim_slashes"
 
 const DEFAULT_REQUEST_OPTS: Net.RequestOpts = {
   method: "GET",
 }
-
-const trimLeadingSlash = (url: string) => (url[0] === "/" ? url.slice(1, url.length) : url)
-const trimTrailingSlash = (url: string) => (url[url.length - 1] === "/" ? url.slice(0, url.length - 1) : url)
-const trimLeftRightSlashes = (url: string) => pipe(url, trimLeadingSlash, trimTrailingSlash)
 
 export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client => {
   return {
