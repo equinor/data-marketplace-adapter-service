@@ -20,10 +20,29 @@ import { toNetErr } from "../lib/net/to_net_err"
  * @openapi
  * /api/assets/{id}/maintainers:
  *   get:
- *     description: Get asset maintainers
+ *     summary: Get Asset Maintainers.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *           required: true
+ *           description: A valid UUID for the Asset.
+ *       - in: query
+ *         name: group
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *           explode: true
+ *           description: Name(s) of group(s) of Maintainers to filter by.
+ *           example:
+ *             - Data Steward
+ *             - Technical Steward
  *     responses:
  *       200:
- *         description: Returns details for asset maintainers.
+ *         description: Returns a list of Asset Maintainers (optionally filtered).
  */
 
 const GetMaintainersTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
