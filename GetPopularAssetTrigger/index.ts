@@ -17,10 +17,18 @@ import { toNetErr } from "../lib/net/to_net_err"
  * @openapi
  * /api/lists/popular:
  *   get:
- *     description: API to get popular assets!
+ *     summary: Get a list of the most viewed Assets.
+ *     description: Get a list of the most viewed Assets, limited by the `limit` parameter (defaults to 10). Not paginated.
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           description: Limit the number of assets returned.
  *     responses:
  *       200:
- *         description: Returns popular assets based on most viewed
+ *         description: Returns a list of the most viewed Assets.
  */
 
 const GetPopularAssets: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
