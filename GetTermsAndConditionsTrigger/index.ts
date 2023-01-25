@@ -16,10 +16,20 @@ import { makeResult } from "../lib/net/make_result"
  * @openapi
  * /api/assets/{id}/terms:
  *   get:
- *     description: API to get terms and conditions
+ *     summary: Get the Terms and Conditions for an Asset.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *           required: true
+ *           description: A valid UUID for the Asset.
  *     responses:
  *       200:
- *         description: Returns terms and consitions for the asset
+ *         description: Returns Terms and Conditions for an Asset.
+ *       404:
+ *         description: Asset was not found or the Asset doesn't have Terms and Conditions.
  */
 
 const GetTermsAndConditionTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
