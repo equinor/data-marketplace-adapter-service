@@ -7,10 +7,13 @@ import { trimTrailingSlash } from "../lib/url/trim_slashes"
 
 const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise<void> {
   const { filename } = context.bindingData
+
+  const url = new URL(context.req.url)
+
   if (filename == null) {
     context.res = {
       headers: {
-        location: `${trimTrailingSlash(context.req.url)}/index.html`,
+        location: `${trimTrailingSlash(url.pathname)}/index.html${url.search}`,
       },
       status: 308,
     }
