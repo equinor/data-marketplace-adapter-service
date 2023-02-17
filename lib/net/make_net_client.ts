@@ -7,7 +7,7 @@ const DEFAULT_REQUEST_OPTS: Net.RequestOpts = {
   method: "GET",
 }
 
-export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client => {
+export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Client => {
   return {
     request: async <T>(url: string, opts?: Net.RequestOpts): Promise<T> => {
       const _baseURL = new URL(trimTrailingSlash(cfg.baseURL))
@@ -33,11 +33,13 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger: Logger): Net.Client
           params: opts.params,
         })
 
-        logger.info(
-          `[client.request] ${config.method} request to ${
-            config.params ? `${config.url}?${config.params.toString()}` : config.url
-          } responded with ${status} (${statusText})`
-        )
+        if (logger) {
+          logger.info(
+            `[client.request] ${config.method} request to ${
+              config.params ? `${config.url}?${config.params.toString()}` : config.url
+            } responded with ${status} (${statusText})`
+          )
+        }
 
         return data
       } catch (err) {

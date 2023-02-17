@@ -19,7 +19,9 @@ import { toNetErr } from "../lib/net/to_net_err"
 
 const GetAssetsTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
-  const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
+  const collibraClient = await makeCollibraClient(req.headers.authorization)()
+
+  const { limit, offset } = req.query
 
   const res = await pipe(
     getStatusByName(collibraClient)("Approved"),
@@ -32,6 +34,8 @@ const GetAssetsTrigger: AzureFunction = async function (context: Context, req: H
             params: new URLSearchParams({
               statusIds: approvedStatus.id,
               typeIds: dataProductType.id,
+              limit: limit ?? "100",
+              offset: offset ?? "0",
             }),
           })
           return assets
