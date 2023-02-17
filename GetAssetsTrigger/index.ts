@@ -15,6 +15,25 @@ import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 
+/**
+ * @openapi
+ * /api/assets
+ * get:
+ *  summary: Get all Assets
+ *  parameters:
+ *    - in: query
+ *      name: limit
+ *      schema:
+ *        type: integer
+ *        default: 100
+ *        description: Limit the number of assets returned.
+ *    - in: query
+ *      name: offset
+ *      schema:
+ *        type: integer
+ *        default: 0
+ *        description: Cursor for the current page of results. To get the next page of results, set the offest to 100 if the limit is 100 (which it is by default).
+ */
 const GetAssetsTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)()
