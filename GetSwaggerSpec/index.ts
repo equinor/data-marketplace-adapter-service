@@ -11,6 +11,7 @@ const swaggerJsdoc: AzureFunction = async function (context: Context): Promise<v
       },
     },
     apis: [
+      "./GetAssets/index.ts",
       "./GetAssetTrigger/index.ts",
       "./GetMaintainersTrigger/index.ts",
       "./GetPopularAssetTrigger/index.ts",
