@@ -38,6 +38,7 @@ jobs:
     steps:
       - name: Get files
         id: get-files
+        uses: actions/cache@v3
         with:
           path: |
             ./*
