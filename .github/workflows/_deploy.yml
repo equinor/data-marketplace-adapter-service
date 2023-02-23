@@ -1,0 +1,147 @@
+name: _Deploy
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        options:
+          - test
+          - prod
+      cache-key:
+        required: true
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+      PAT:
+        required: true
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  AZURE_RESOURCE_GROUP_NAME: rg-datamarketplace-${{ inputs.environment }}
+  AZURE_FUNCTIONAPP_NAME: func-datamarketplace-${{ inputs.environment }}
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: ${{ github.workspace }}/
+  BUILD_OUTPUT_PATH: ${{ github.workspace }}/
+  BUILD_PACKAGE_NAME: adapters.zip
+  BUILD_ARTIFACT_PATH: ${{ github.workspace }}/build_artifacts
+
+jobs:
+  deploy-az-infrastructure:
+    name: Deploy Azure Infrastructure
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Login to Azure 🔐
+        id: login-to-azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Checkout internal 🛎️
+        id: checkout-internal
+        uses: actions/checkout@v3
+        with:
+          repository: equinor/data-marketplace-internal
+          ref: main
+          token: ${{ secrets.PAT }}
+      - name: Creating Azure Function App 🏗️
+        id: create-azure-app
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az deployment group create \
+            --name az-func-adapter-service-deploy \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME }} \
+            --template-file $GITHUB_WORKSPACE/ci/build-and-deploy/adapter-service.bicep \
+            --parameters "{ \"azureEnvironment\": { \"value\": \"${{ inputs.environment }}\" } }"
+      - name: log-errors-to-slack 📄
+        uses: act10ns/slack@v2
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
+
+  build-function-application:
+    name: Build function application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get files 💾
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./*
+            .npm
+          key: ${{ inputs.cache-key }}
+      - name: Build ⚙
+        id: build-functions
+        run: |
+          npm run build
+          mkdir ${{ env.BUILD_ARTIFACT_PATH}}
+          pushd ${{ env.BUILD_OUTPUT_PATH }}
+          zip -r ${{ env.BUILD_ARTIFACT_PATH }}/${{ env.BUILD_PACKAGE_NAME }} .
+          popd
+      - name: Package Azure Function release build
+        id: package-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          path: ${{ env.BUILD_ARTIFACT_PATH }}
+      - name: log-errors-to-slack 📄
+        uses: act10ns/slack@v2
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
+
+  deploy-function-application:
+    environment:
+      name: ${{ inputs.environment }}
+    needs: [build-function-application, deploy-az-infrastructure]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure 🔐
+        id: login-to-azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: Fetching Azure Functions Publishing Profile
+        id: fetch-publishing-profile
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $profile = ""
+            $profile = Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RESOURCE_GROUP_NAME -Name $env:AZURE_FUNCTIONAPP_NAME
+            $profile = $profile.Replace("`r", "").Replace("`n", "")
+            Write-Output "pubprofile=$profile" >> $GITHUB_OUTPUT
+            Remove-Variable profile
+          azPSVersion: latest
+      - name: Create output directory
+        shell: bash
+        run: |
+          mkdir ${{ env.BUILD_ARTIFACT_PATH }}
+      # Fetch published code
+      - name: Download Azure function release build
+        id: download-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          path: ${{ env.BUILD_ARTIFACT_PATH }}
+      # Deploy Azure functions code
+      - name: Run Azure Functions Action
+        id: deploy
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.BUILD_ARTIFACT_PATH }}/${{ env.BUILD_PACKAGE_NAME }}
+          publish-profile: ${{ steps.fetch-publishing-profile.outputs.pubprofile }}
+      - name: log-errors-to-slack 📄
+        uses: act10ns/slack@v2
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
