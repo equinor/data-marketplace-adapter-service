@@ -10,7 +10,7 @@ jobs:
     secrets: inherit
 
   check-code:
-    uses: equinor/data-marketplace-adapter-service/.github/workflows/check-code.yml@main
+    uses: equinor/data-marketplace-adapter-service/.github/workflows/_checks.yml@main
     needs: setup
     with:
       cache-key: ${{ github.sha }}

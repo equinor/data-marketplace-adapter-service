@@ -1,15 +1,6 @@
 name: Check code
-description: Ensure code quality and code formatting
 on:
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      cache-key:
-        type: string
-        default: ${{ github.sha }}
-    secrets:
-      SLACK_WEBHOOK_URL:
-        required: true
   push:
     branches:
       - main
@@ -21,85 +12,16 @@ on:
     paths:
       - '**/*.{j,t}s'
 
-env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
 jobs:
   setup:
+    name: Checkout and setup
     uses: equinor/data-marketplace-adapter-service/.github/workflows/_setup.yml@main
     with:
-      cache-key: ${{ inputs.cache-key }}
+      cache-key: ${{ github.sha }}
     secrets: inherit
-
-  test-build:
-    name: Test build
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get files
-        id: get-files
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./*
-            .npm
-          key: ${{ inputs.cache-key }}
-      - name: Run test build
-        id: run-test-build
-        run: npm run build -- --noEmit
-      - name: Log errors to Slack
-        id: slack-err-log
-        uses: act10ns/slack@v2
-        with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: faliure()
-
-  lint:
-    name: Lint
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get files
-        id: get-files
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./*
-            .npm
-          key: ${{ inputs.cache-key }}
-      - name: Run linter
-        id: run-linter
-        run: |
-          npm run lint
-      - name: Log errors to Slack
-        id: slack-err-log
-        uses: act10ns/slack@v2
-        with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: faliure()
-
-  test:
-    name: Test
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get files
-        id: get-files
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./*
-            .npm
-          key: ${{ inputs.cache-key }}
-      - name: Run test suite
-        id: run-tests
-        run: npm test -- --passWithNoTests
-      - name: Log errors to Slack
-        id: slack-err-log
-        uses: act10ns/slack@v2
-        with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: faliure()
+  checks:
+    name: Run checks
+    uses: equinor/data-marketplace-adapter-service/.github/workflows/_checks.yml@main
+    with:
+      cache-key: ${{ github.sha }}
+    secrets: inherit
