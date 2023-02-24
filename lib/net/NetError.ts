@@ -10,6 +10,6 @@ export class NetError extends Error {
   }
 
   public get stausText(): string {
-    return STATUS_CODES[this.status]
+    return STATUS_CODES[this.status]!
   }
 }

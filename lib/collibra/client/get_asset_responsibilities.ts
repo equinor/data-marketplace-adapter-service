@@ -1,4 +1,3 @@
-import { AxiosError } from "axios"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
@@ -14,7 +13,7 @@ export const getAssetResponsibilities =
           Get<Collibra.PagedResponsibilityResponse>(client)("/responsibilities", {
             params: new URLSearchParams({ resourceIds: id }),
           }),
-        (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+        (err: any) => toNetErr(err.response.status ?? 500)(err.message)
       ),
       TE.map(({ results }) => results)
     )

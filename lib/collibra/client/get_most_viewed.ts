@@ -1,4 +1,4 @@
-import { AxiosError, AxiosResponse } from "axios"
+import { AxiosResponse } from "axios"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
@@ -17,7 +17,7 @@ export const getMostViewed = (client: Net.Client) => (limit: number, offset: num
             offset: String(offset),
           }),
         }),
-      (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+      (err: any) => toNetErr(err.response.status ?? 500)(err.message)
     ),
     TE.map(({ data }) => data.results)
   )

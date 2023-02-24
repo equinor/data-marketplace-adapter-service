@@ -1,4 +1,3 @@
-import { AxiosError } from "axios"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
@@ -14,8 +13,8 @@ export const getRolesByNames =
     pipe(
       TE.tryCatch(
         () => Get<RolesResponse>(client)("/roles"),
-        (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+        (err: any) => toNetErr(err.response.status ?? 500)(err.message)
       ),
       TE.map(({ results }) => results),
-      TE.map(A.filter((r) => names.length === 0 || names.includes(r.name)))
+      TE.map(A.filter((r) => names.length === 0 || names.includes(r.name!)))
     )

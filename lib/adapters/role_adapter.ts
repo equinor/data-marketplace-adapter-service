@@ -8,7 +8,7 @@ export const roleAdapter = (cr: Collibra.Role): E.Either<string, Role> => {
   const role: Role = {
     createdAt: new Date(cr.createdOn),
     id: cr.id,
-    name: cr.name,
+    name: cr.name!,
     updatedAt: new Date(cr.lastModifiedOn),
   }
   return pipe(role, hasInvalidDateFields)

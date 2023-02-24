@@ -45,7 +45,7 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     TE.bind("approvedStatus", () => getStatusByName(collibraClient)("Approved")),
     TE.bind("approvedAsset", ({ approvedStatus, collibraAsset }) =>
       pipe(
-        TE.fromEither(determineAssetStatus(approvedStatus.name)(collibraAsset)),
+        TE.fromEither(determineAssetStatus(approvedStatus.name!)(collibraAsset)),
         TE.mapLeft(() => toNetErr(403)("This asset is not approved"))
       )
     ),

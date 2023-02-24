@@ -1,4 +1,3 @@
-import { AxiosError } from "axios"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
@@ -29,5 +28,5 @@ export const getRightsToUseAsset = (client: Net.Client) => (id: string) =>
     TE.tryCatch(getRelationTypes(client), E.toError),
     TE.chain(({ results }) => TE.tryCatch(getRelations(client, results[0].id, id), E.toError)),
     TE.chain(({ results }) => TE.tryCatch(getAsset(client, results[0].target.id), E.toError)),
-    TE.mapLeft((err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message))
+    TE.mapLeft((err: any) => toNetErr(err.response.status ?? 500)(err.message))
   )

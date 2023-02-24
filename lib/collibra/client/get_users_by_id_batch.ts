@@ -1,4 +1,3 @@
-import { AxiosError } from "axios"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
@@ -9,7 +8,7 @@ import { toNetErr } from "../../net/to_net_err"
 const getUsers = (client: Net.Client) => (params: URLSearchParams) =>
   TE.tryCatch(
     () => Get<Collibra.PagedUserResponse>(client)("/users", { params }),
-    (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+    (err: any) => toNetErr(err.response.status ?? 500)(err.message)
   )
 
 export const getUsersByIdBatch = (client: Net.Client) => (IDs: string[]) =>

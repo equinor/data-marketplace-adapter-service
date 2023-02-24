@@ -1,5 +1,4 @@
 import type { AzureFunction, Context, HttpRequest } from "@azure/functions"
-import type { AxiosError } from "axios"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
@@ -44,7 +43,7 @@ const GetPopularAssets: AzureFunction = async function (context: Context, req: H
     TE.chain(({ approvedStatus, dataProductType }) =>
       TE.tryCatch(
         () => getMostViewedDataProducts(collibraClient)([], limit, 0, approvedStatus.id, dataProductType.id),
-        (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+        (err: any) => toNetErr(err.response.status ?? 500)(err.message)
       )
     ),
     TE.map((assets) => assets.sort((a, b) => (a.views > b.views ? -1 : 1))),

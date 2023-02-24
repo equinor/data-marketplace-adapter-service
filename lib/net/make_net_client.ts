@@ -10,7 +10,7 @@ const DEFAULT_REQUEST_OPTS: Net.RequestOpts = {
 export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Client => {
   return {
     request: async <T>(url: string, opts?: Net.RequestOpts): Promise<T> => {
-      const _baseURL = new URL(trimTrailingSlash(cfg.baseURL))
+      const _baseURL = new URL(trimTrailingSlash(cfg.baseURL!))
       const _url = new URL(
         trimLeftRightSlashes(url),
         `${trimTrailingSlash(_baseURL.href)}/` // just to guarantee that the url has a trailing slash
@@ -26,11 +26,11 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Clien
           url: _url.toString(),
           headers: {
             ...cfg.headers,
-            ...opts.headers,
+            ...opts?.headers,
           },
-          method: opts.method,
-          data: opts.body,
-          params: opts.params,
+          method: opts?.method,
+          data: opts?.body,
+          params: opts?.params,
         })
 
         if (logger) {
@@ -42,8 +42,8 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Clien
         }
 
         return data
-      } catch (err) {
-        logger.error(`[client.request] ${_opts.method} to ${_url.toString()} failed: ${err.message}`)
+      } catch (err: any) {
+        logger?.error(`[client.request] ${_opts.method} to ${_url.toString()} failed: ${err.message}`)
         throw err
       }
     },
