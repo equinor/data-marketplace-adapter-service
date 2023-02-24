@@ -15,7 +15,6 @@ env:
 jobs:
   test-build:
     name: Test build
-    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Get files
@@ -39,7 +38,6 @@ jobs:
 
   lint:
     name: Lint
-    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Get files
@@ -64,7 +62,6 @@ jobs:
 
   test:
     name: Test
-    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Get files
