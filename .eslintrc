@@ -23,16 +23,7 @@
         "jest": true
       },
       "rules": {
-        "@typescript-eslint/ban-ts-comment": 1,
-        "@typescript-eslint/ban-types": [
-          "error",
-          {
-              "types": {
-                  "{}": false 
-              },
-              "extendDefaults": true
-          }
-      ]
+        "@typescript-eslint/ban-ts-comment": 1
       }
     },
     {
