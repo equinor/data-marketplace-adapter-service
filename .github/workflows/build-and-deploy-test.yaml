@@ -23,6 +23,6 @@ jobs:
     uses: equinor/data-marketplace-adapter-service/.github/workflows/_deploy.yml@main
     needs: [setup, check-code]
     with:
-      environment: prod
+      environment: test
       cache-key: ${{ github.sha }}
     secrets: inherit
