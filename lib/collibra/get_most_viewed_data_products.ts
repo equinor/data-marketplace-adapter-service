@@ -9,6 +9,7 @@ export type AssetWithViews = Asset & { views: number }
 type NavStatsResponse = Collibra.PagedNavigationStatisticResponse
 type AssetsResponse = Collibra.Asset
 type AttributesResponse = Collibra.PagedAttributeResponse
+type DomainResponse = Collibra.Domain
 
 // TODO: Refactor this to fp-ts
 export const getMostViewedDataProducts =
@@ -50,9 +51,13 @@ export const getMostViewedDataProducts =
       )
     )
 
+    const domain = await Promise.all(
+      approvedDataProducts.map((asset) => Get<DomainResponse>(client)(`/domains/${asset.domain.id}`))
+    )
+
     // run assets through asset adapter
     const assetsWithViews: AssetWithViews[] = approvedDataProducts.map((asset, i) => ({
-      ...assetAdapter({ ...asset, attributes: attributes[i].results }),
+      ...assetAdapter(asset)(attributes[i].results)(domain[i].community),
       views: stats.results.find((stat) => stat.assetId === asset.id).numberOfViews ?? 0,
     }))
 

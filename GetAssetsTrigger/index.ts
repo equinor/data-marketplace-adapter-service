@@ -8,6 +8,7 @@ import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
 import { getAssetTypeByName } from "../lib/collibra/client/get_asset_type_by_name"
 import { getAssets } from "../lib/collibra/client/get_assets"
+import { getCommunityByDomainID } from "../lib/collibra/client/get_community_by_domainid"
 import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { makeLogger } from "../lib/logger"
@@ -60,7 +61,9 @@ const GetAssetsTrigger: AzureFunction = async function (context: Context, req: H
         A.map((asset) =>
           pipe(
             getAssetAttributes(collibraClient)(asset.id),
-            TE.map((attributes) => assetAdapter({ ...asset, attributes }))
+            TE.bindTo("attributes"),
+            TE.bind("community", () => getCommunityByDomainID(collibraClient)(asset.domain.id)),
+            TE.map(({ attributes, community }) => assetAdapter(asset)(attributes)(community))
           )
         ),
         TE.sequenceArray
