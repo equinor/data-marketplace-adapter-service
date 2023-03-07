@@ -2,7 +2,7 @@ import { STATUS_CODES } from "http"
 
 export class NetError extends Error {
   status: number
-  cause: string
+  cause!: string
 
   constructor(message: string, status: number) {
     super(message)

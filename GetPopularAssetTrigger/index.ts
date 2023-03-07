@@ -10,7 +10,6 @@ import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
-import { toNetErr } from "../lib/net/to_net_err"
 
 /**
  * @openapi
@@ -43,7 +42,7 @@ const GetPopularAssets: AzureFunction = async function (context: Context, req: H
     TE.chain(({ approvedStatus, dataProductType }) =>
       TE.tryCatch(
         () => getMostViewedDataProducts(collibraClient)([], limit, 0, approvedStatus.id, dataProductType.id),
-        (err: any) => toNetErr(err.response.status ?? 500)(err.message)
+        (toNetErr: any) => toNetErr(toNetErr.response.status ?? 500)(toNetErr.message)
       )
     ),
     TE.map((assets) => assets.sort((a, b) => (a.views > b.views ? -1 : 1))),
