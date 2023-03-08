@@ -10,9 +10,10 @@ const isEmpty = (value?: string) => {
 }
 
 export const assetAdapter =
-  (asset: Collibra.Asset) =>
   (attributes: Collibra.Attribute[]) =>
-  (community: Collibra.NamedResourceReference): Asset => {
+  (community: Collibra.NamedResourceReference) =>
+  (tags: Collibra.Tag[]) =>
+  (asset: Collibra.Asset): Asset => {
     const attrs = attributes.reduce((map, attr) => {
       if (attr.type.name.toLowerCase() in map || !ATTRIBUTE_NAMES.includes(attr.type.name.toLowerCase())) {
         return map
@@ -42,7 +43,11 @@ export const assetAdapter =
       },
       qualityScore: 0,
       rating: 0,
-      tags: [],
+      tags:
+        tags?.map((tag) => ({
+          id: tag.id,
+          label: tag.name ?? "",
+        })) ?? [],
       type: {
         id: asset.type.id,
         name: asset.type.name,

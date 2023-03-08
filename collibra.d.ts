@@ -232,6 +232,11 @@ declare namespace Collibra {
     endingDate: number
   }
 
+  export type Tag = NamedResource & {
+    description: string
+    assetsCount: string
+  }
+
   export type StartWorkflowInstanceRequest = {
     workflowDefinitionId: string
     businessItemIds: string[]
@@ -518,6 +523,7 @@ declare namespace Collibra {
   export type PagedRelationResponse = PagedResponse<Relation> & {
     nextCursor: string
   }
+  export type PagedTagResponse = PagedResponse<Tag>
 
   export type WorkflowInstance = Resource & {
     workflowDefinition: WorkflowDefinitionReference
