@@ -14,7 +14,7 @@ import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
-import { toNetErr } from "../lib/net/to_net_err"
+import { toNetError } from "../lib/net/to_net_err"
 
 /**
  * @openapi
@@ -56,7 +56,7 @@ const GetMaintainersTrigger: AzureFunction = async function (context: Context, r
     TE.map((responsibilities) => TE.fromEither(filterResponsibilitiesByGroups(groups)(responsibilities))),
     TE.flatten,
     TE.bindTo("responsibilities"),
-    TE.mapLeft((err) => toNetErr(400)(err.message)),
+    TE.mapLeft((err) => toNetError(400)(err.message)),
     // get users by ids
     TE.bind("users", ({ responsibilities }) =>
       pipe(
@@ -85,7 +85,7 @@ const GetMaintainersTrigger: AzureFunction = async function (context: Context, r
         TE.sequenceArray
       )
     ),
-    TE.mapLeft((err) => toNetErr(500)(err.message)),
+    TE.mapLeft((err) => toNetError(500)(err.message)),
     TE.match(
       (err) => {
         logger.error(err)
