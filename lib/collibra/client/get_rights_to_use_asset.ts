@@ -29,5 +29,5 @@ export const getRightsToUseAsset = (client: Net.Client) => (id: string) =>
     TE.tryCatch(getRelationTypes(client), E.toError),
     TE.chain(({ results }) => TE.tryCatch(getRelations(client, results[0].id, id), E.toError)),
     TE.chain(({ results }) => TE.tryCatch(getAsset(client, results[0].target.id), E.toError)),
-    TE.mapLeft(() => toNetError(HttpStatusCode.InternalServerError))
+    TE.mapLeft(toNetError(HttpStatusCode.InternalServerError))
   )
