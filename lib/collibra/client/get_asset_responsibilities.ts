@@ -1,9 +1,9 @@
-import { AxiosError } from "axios"
+import { HttpStatusCode } from "axios"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
 import { Get } from "../../net/get"
-import { toNetErr } from "../../net/to_net_err"
+import { toNetError } from "../../net/to_net_err"
 
 export const getAssetResponsibilities =
   (client: Net.Client) =>
@@ -14,7 +14,7 @@ export const getAssetResponsibilities =
           Get<Collibra.PagedResponsibilityResponse>(client)("/responsibilities", {
             params: new URLSearchParams({ resourceIds: id }),
           }),
-        (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+        toNetError(HttpStatusCode.InternalServerError)
       ),
       TE.map(({ results }) => results)
     )

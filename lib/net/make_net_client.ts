@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosRequestConfig, isAxiosError } from "axios"
 
 import { Logger } from "../logger"
 import { trimLeftRightSlashes, trimTrailingSlash } from "../url/trim_slashes"
@@ -10,28 +10,24 @@ const DEFAULT_REQUEST_OPTS: Net.RequestOpts = {
 export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Client => {
   return {
     request: async <T>(url: string, opts?: Net.RequestOpts): Promise<T> => {
-      const _baseURL = new URL(trimTrailingSlash(cfg.baseURL))
+      const _baseURL = new URL(trimTrailingSlash(cfg.baseURL as string))
       const _url = new URL(
         trimLeftRightSlashes(url),
         `${trimTrailingSlash(_baseURL.href)}/` // just to guarantee that the url has a trailing slash
       )
 
-      const _opts = {
+      const _opts: AxiosRequestConfig = {
         ...DEFAULT_REQUEST_OPTS,
         ...opts,
+        url: _url.toString(),
+        headers: {
+          ...(cfg?.headers ?? {}),
+          ...(opts?.headers ?? {}),
+        },
       }
 
       try {
-        const { data, status, statusText, config } = await axios.request<T>({
-          url: _url.toString(),
-          headers: {
-            ...cfg.headers,
-            ...opts.headers,
-          },
-          method: opts.method,
-          data: opts.body,
-          params: opts.params,
-        })
+        const { data, status, statusText, config } = await axios.request<T>(_opts)
 
         if (logger) {
           logger.info(
@@ -43,7 +39,11 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Clien
 
         return data
       } catch (err) {
-        logger.error(`[client.request] ${_opts.method} to ${_url.toString()} failed: ${err.message}`)
+        if (isAxiosError(err)) {
+          logger?.error(`[client.request] ${_opts.method} to ${_url.toString()} failed: ${err.message}`)
+        } else {
+          logger?.error("[client.request]", err)
+        }
         throw err
       }
     },

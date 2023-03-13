@@ -1,15 +1,15 @@
-import { AxiosError } from "axios"
+import { HttpStatusCode } from "axios"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
 import { Get } from "../../net/get"
-import { toNetErr } from "../../net/to_net_err"
+import { toNetError } from "../../net/to_net_err"
 
 const getUsers = (client: Net.Client) => (params: URLSearchParams) =>
   TE.tryCatch(
     () => Get<Collibra.PagedUserResponse>(client)("/users", { params }),
-    (err: AxiosError) => toNetErr(err.response.status ?? 500)(err.message)
+    toNetError(HttpStatusCode.InternalServerError)
   )
 
 export const getUsersByIdBatch = (client: Net.Client) => (IDs: string[]) =>
@@ -21,7 +21,7 @@ export const getUsersByIdBatch = (client: Net.Client) => (IDs: string[]) =>
         return params
       })
     ),
-    TE.mapLeft((err: Error) => toNetErr(500)(err.message)),
+    TE.mapLeft((err: Error) => toNetError(500)(err.message)),
     TE.chain(getUsers(client)),
     TE.map(({ results }) => results)
   )

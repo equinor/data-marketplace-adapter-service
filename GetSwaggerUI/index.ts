@@ -10,7 +10,7 @@ const swaggerJsdocUI: AzureFunction = async function (context: Context): Promise
   if (filename == null) {
     context.res = {
       headers: {
-        location: `${trimTrailingSlash(context.req.url)}/index.html`,
+        location: `${trimTrailingSlash(context.req?.url as string)}/index.html`,
       },
       status: 308,
     }

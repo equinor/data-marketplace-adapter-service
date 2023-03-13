@@ -31,12 +31,12 @@ export const assetAdapter =
         name: community.name,
       },
       createdAt: new Date(asset.createdOn),
-      excerpt: !isEmpty(attrs.description?.value) ? htmlToPortableText(attrs.description.value) : null,
+      excerpt: !isEmpty(attrs.description?.value) ? htmlToPortableText(attrs.description.value) : null!,
       description: !isEmpty(attrs["additional information"]?.value)
         ? htmlToPortableText(attrs["additional information"].value)
-        : null,
+        : null!,
       id: asset.id,
-      name: asset.name,
+      name: asset.name!,
       provider: {
         id: "",
         name: "Collibra",
@@ -53,6 +53,7 @@ export const assetAdapter =
         name: asset.type.name,
       },
       updatedAt: new Date(asset.lastModifiedOn),
-      updateFrequency: !isEmpty(attrs.timeliness?.value) ? htmlToPortableText(attrs.timeliness.value) : null,
+      updateFrequency: !isEmpty(attrs.timeliness?.value) ? htmlToPortableText(attrs.timeliness.value) : null!,
     }
+
   }

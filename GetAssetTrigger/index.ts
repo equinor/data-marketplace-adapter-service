@@ -15,7 +15,7 @@ import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
-import { toNetErr } from "../lib/net/to_net_err"
+import { toNetError } from "../lib/net/to_net_err"
 
 /**
  * @openapi
@@ -47,8 +47,8 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     TE.bind("approvedStatus", () => getStatusByName(collibraClient)("Approved")),
     TE.bind("approvedAsset", ({ approvedStatus, collibraAsset }) =>
       pipe(
-        TE.fromEither(determineAssetStatus(approvedStatus.name)(collibraAsset)),
-        TE.mapLeft(() => toNetErr(403)("This asset is not approved"))
+        TE.fromEither(determineAssetStatus(approvedStatus.name as string)(collibraAsset)),
+        TE.mapLeft(() => toNetError(403)("This asset is not approved"))
       )
     ),
     TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),

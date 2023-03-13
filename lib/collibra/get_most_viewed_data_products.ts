@@ -63,7 +63,8 @@ export const getMostViewedDataProducts =
     // run assets through asset adapter
     const assetsWithViews: AssetWithViews[] = approvedDataProducts.map((asset, i) => ({
       ...assetAdapter(attributes[i].results)(domain[i].community)(tags[i])(asset),
-      views: stats.results.find((stat) => stat.assetId === asset.id).numberOfViews ?? 0,
+      views: stats.results.find((stat) => stat.assetId === asset.id)?.numberOfViews ?? 0,
+
     }))
 
     const result = [...assets, ...assetsWithViews]
