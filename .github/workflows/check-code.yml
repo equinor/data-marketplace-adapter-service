@@ -1,25 +1,27 @@
-name: Build and deploy to production environment
+name: Check code
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.{j,t}s'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.{j,t}s'
 
 jobs:
   setup:
+    name: Checkout and setup
     uses: equinor/data-marketplace-adapter-service/.github/workflows/_setup.yml@main
     with:
       cache-key: ${{ github.sha }}
     secrets: inherit
-
-  check-code:
+  checks:
+    name: Run checks
     uses: equinor/data-marketplace-adapter-service/.github/workflows/_checks.yml@main
-    needs: setup
     with:
-      cache-key: ${{ github.sha }}
-    secrets: inherit
-
-  deploy:
-    uses: equinor/data-marketplace-adapter-service/.github/workflows/_deploy.yml@main
-    needs: [setup, check-code]
-    with:
-      environment: prod
       cache-key: ${{ github.sha }}
     secrets: inherit

@@ -6,6 +6,8 @@ import { pipe } from "fp-ts/function"
 import { assetAdapter } from "../lib/collibra/asset_adapter"
 import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
 import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
+import { getAssetTags } from "../lib/collibra/client/get_asset_tags"
+import { getCommunityByDomainID } from "../lib/collibra/client/get_community_by_domainid"
 import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { determineAssetStatus } from "../lib/collibra/determine_asset_status"
@@ -50,8 +52,12 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
       )
     ),
     TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),
-    TE.map(({ approvedAsset, collibraAttributes }) =>
-      assetAdapter({ ...approvedAsset, attributes: collibraAttributes })
+    TE.bind("collibraCommunity", ({ approvedAsset }) =>
+      getCommunityByDomainID(collibraClient)(approvedAsset.domain.id)
+    ),
+    TE.bind("tags", ({ approvedAsset }) => getAssetTags(collibraClient)(approvedAsset.id)),
+    TE.map(({ approvedAsset, collibraAttributes, collibraCommunity, tags }) =>
+      assetAdapter(collibraAttributes)(collibraCommunity)(tags)(approvedAsset)
     ),
     TE.match(
       (err) => {
