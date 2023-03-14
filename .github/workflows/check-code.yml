@@ -15,6 +15,7 @@ jobs:
     secrets: inherit
   checks:
     name: Run checks
+    needs: setup
     uses: equinor/data-marketplace-adapter-service/.github/workflows/_checks.yml@main
     with:
       cache-key: ${{ github.sha }}
