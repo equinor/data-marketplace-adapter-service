@@ -30,10 +30,10 @@ describe("maintainerAdapter", () => {
   it("returns left path for invalid date", () => {
     // @ts-ignore
     role.createdOn = "Invalid date"
-    expect(E.isLeft(roleAdapter(role))).toBe(true)
+    expect(E.isLeft(roleAdapter(role!))).toBe(true)
   })
 
   it("returns right path for valid input", () => {
-    expect(E.isRight(roleAdapter(role))).toBe(true)
+    expect(E.isRight(roleAdapter(role!))).toBe(true)
   })
 })
