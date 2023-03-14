@@ -56,8 +56,8 @@ describe("maintainerAdapter", () => {
   })
 
   afterEach(() => {
-    role = null
-    user = null
+    role = O.none
+    user = O.none
   })
 
   it("returns left path for invalid date", () => {
