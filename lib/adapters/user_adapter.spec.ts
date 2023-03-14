@@ -44,10 +44,10 @@ describe("maintainerAdapter", () => {
   it("returns left path for invalid date", () => {
     // @ts-ignore
     user.createdOn = "Invalid date"
-    expect(E.isLeft(userAdapter(user))).toBe(true)
+    expect(E.isLeft(userAdapter(user as Collibra.User))).toBe(true)
   })
 
   it("returns right path for valid input", () => {
-    expect(E.isRight(userAdapter(user))).toBe(true)
+    expect(E.isRight(userAdapter(user as Collibra.User))).toBe(true)
   })
 })
