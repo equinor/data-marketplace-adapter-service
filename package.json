@@ -55,7 +55,7 @@
     "fp-ts": "^2.13.1",
     "jsdom": "^20.0.3",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-dist": "^4.16.0",
+    "swagger-ui-dist": "^4.16.1",
     "xss": "^1.0.14"
   }
 }
