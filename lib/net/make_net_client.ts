@@ -24,6 +24,7 @@ export const makeNetClient = (cfg: Net.ClientConfig, logger?: Logger): Net.Clien
           ...(cfg?.headers ?? {}),
           ...(opts?.headers ?? {}),
         },
+        data: opts?.body,
       }
 
       try {

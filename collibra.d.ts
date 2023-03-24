@@ -525,6 +525,10 @@ declare namespace Collibra {
   }
   export type PagedTagResponse = PagedResponse<Tag>
 
+  export type OutputModuleResponse<T = unknown> = {
+    view: T
+  }
+
   export type WorkflowInstance = Resource & {
     workflowDefinition: WorkflowDefinitionReference
     subInstances: any[]
