@@ -1,21 +1,21 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { Asset } from "@equinor/data-marketplace-models"
+import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
+import validator from "validator"
 
-import { assetAdapter } from "../lib/collibra/asset_adapter"
-import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
-import { getAssetByID } from "../lib/collibra/client/get_asset_by_id"
-import { getAssetTags } from "../lib/collibra/client/get_asset_tags"
-import { getCommunityByDomainID } from "../lib/collibra/client/get_community_by_domainid"
-import { getStatusByName } from "../lib/collibra/client/get_status_id"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
-import { determineAssetStatus } from "../lib/collibra/determine_asset_status"
+import { htmlToPortableText } from "../lib/html_to_portable_text"
 import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
 import { toNetError } from "../lib/net/to_net_err"
+
+import { getAsset } from "./lib/getAsset"
+
+const isValidID = (id: string) => (!validator.isUUID(id) ? E.left("Invalid asset ID") : E.right(id))
 
 /**
  * @openapi
@@ -37,34 +37,51 @@ import { toNetError } from "../lib/net/to_net_err"
  *         description: The Asset could not be found.
  */
 const GetAssetTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-  const { id } = context.bindingData
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
 
   const res = await pipe(
-    getAssetByID(collibraClient)(id),
-    TE.bindTo("collibraAsset"),
-    TE.bind("approvedStatus", () => getStatusByName(collibraClient)("Approved")),
-    TE.bind("approvedAsset", ({ approvedStatus, collibraAsset }) =>
-      pipe(
-        TE.fromEither(determineAssetStatus(approvedStatus.name as string)(collibraAsset)),
-        TE.mapLeft(() => toNetError(403)("This asset is not approved"))
-      )
-    ),
-    TE.bind("collibraAttributes", () => getAssetAttributes(collibraClient)(id)),
-    TE.bind("collibraCommunity", ({ approvedAsset }) =>
-      getCommunityByDomainID(collibraClient)(approvedAsset.domain.id)
-    ),
-    TE.bind("tags", ({ approvedAsset }) => getAssetTags(collibraClient)(approvedAsset.id)),
-    TE.map(({ approvedAsset, collibraAttributes, collibraCommunity, tags }) =>
-      assetAdapter(collibraAttributes)(collibraCommunity)(tags)(approvedAsset)
+    context.bindingData.id,
+    isValidID,
+    E.mapLeft(toNetError(400)),
+    TE.fromEither,
+    TE.chain(getAsset(collibraClient)),
+    TE.mapLeft(toNetError(500)),
+    TE.map(
+      (asset) =>
+        ({
+          community: {
+            id: asset.domains[0].communities[0].communityId,
+            name: asset.domains[0].communities[0].communityName,
+          },
+          createdAt: asset.createdAt,
+          description: htmlToPortableText(
+            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Additional Information")
+              ?.attributeValue ?? ""
+          ),
+          id: asset.id,
+          name: asset.name,
+          provider: { id: "", name: "Collibra" },
+          qualityScore: 0.0,
+          rating: 0.0,
+          type: {
+            id: asset.assetTypes[0]?.assetTypeId ?? "",
+            name: asset.assetTypes[0]?.assetTypeName ?? "",
+          },
+          updatedAt: asset.updatedAt,
+          updateFrequency: htmlToPortableText(
+            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Timeliness")
+              ?.attributeValue ?? ""
+          ),
+          excerpt: htmlToPortableText(
+            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Description")
+              ?.attributeValue ?? ""
+          ),
+        } as Asset)
     ),
     TE.match(
-      (err) => {
-        logger.error(err)
-        return makeResult<Asset, NetError>(err.status ?? 500, err)
-      },
-      (collibraAsset) => makeResult<Asset, NetError>(200, collibraAsset)
+      (err) => makeResult<Asset, NetError>(err.status ?? 500, err),
+      (assets) => makeResult<Asset, NetError>(200, assets)
     )
   )()
 
