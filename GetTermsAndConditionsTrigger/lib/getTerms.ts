@@ -44,7 +44,7 @@ const getQuery = (assetId: string) => ({
           TargetAsset: {
             name: "targetAssets",
             Id: { name: "targetAssetId" },
-            Name: { name: "targetAssetName" },
+            DisplayName: { name: "targetAssetName" },
             CreatedOn: { name: "targetAssetCreatedAt" },
             LastModified: { name: "targetAssetUpdatedAt" },
             AssetType: {
@@ -95,6 +95,7 @@ export const getTerms = (client: Net.Client) => (assetId: string) =>
     TE.tryCatch(
       () =>
         Post<TermsResponse>(client)("/outputModule/export/json", {
+          params: new URLSearchParams({ validationEnabled: "true" }),
           headers: { "content-type": "application/json" },
           body: getQuery(assetId),
         }),
