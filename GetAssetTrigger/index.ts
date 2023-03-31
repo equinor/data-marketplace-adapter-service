@@ -3,10 +3,10 @@ import { Asset } from "@equinor/data-marketplace-models"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
-import validator from "validator"
 
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
 import { htmlToPortableText } from "../lib/html_to_portable_text"
+import { isValidID } from "../lib/isValidID"
 import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
@@ -14,8 +14,6 @@ import { makeResult } from "../lib/net/make_result"
 import { toNetError } from "../lib/net/to_net_err"
 
 import { getAsset } from "./lib/getAsset"
-
-const isValidID = (id: string) => (!validator.isUUID(id) ? E.left("Invalid asset ID") : E.right(id))
 
 /**
  * @openapi
