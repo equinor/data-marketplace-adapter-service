@@ -1,17 +1,17 @@
 import type { RightsToUse } from "@equinor/data-marketplace-models"
+// import * as E from "fp-ts/lib/Either"
 import * as TE from "fp-ts/lib/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
 import { rightsToUseAdapter } from "../../lib/adapters/rights_to_use_adapter"
 import { isValidID } from "../../lib/isValidID"
-import type { Logger } from "../../lib/logger"
 import type { NetError } from "../../lib/net/NetError"
 import { makeResult } from "../../lib/net/make_result"
 import { toNetError } from "../../lib/net/to_net_err"
 
 import { getTerms } from "./getTerms"
 
-export const getTermsHandler = (client: Net.Client) => (_logger: Logger) => (assetId: string) =>
+export const getTermsHandler = (client: Net.Client) => (assetId: string) =>
   pipe(
     assetId,
     isValidID,

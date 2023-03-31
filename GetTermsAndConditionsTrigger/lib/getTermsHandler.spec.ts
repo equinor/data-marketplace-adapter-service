@@ -1,7 +1,5 @@
 import crypto from "node:crypto"
 
-import { stubbedLogger } from "../../lib/testing/stubbed_logger"
-
 import { getTermsHandler } from "./getTermsHandler"
 
 describe("getTermsHandler", () => {
@@ -10,7 +8,7 @@ describe("getTermsHandler", () => {
       request: <T>() => Promise.resolve() as Promise<T>,
     }))
 
-    const res = await getTermsHandler(getClient())(stubbedLogger())("invalid uuid")()
+    const res = await getTermsHandler(getClient())("invalid uuid")()
     expect(res.status).toBe(400)
   })
 
@@ -19,7 +17,7 @@ describe("getTermsHandler", () => {
       request: <T>() => Promise.reject() as Promise<T>,
     }))
 
-    const res = await getTermsHandler(getClient())(stubbedLogger())(crypto.randomUUID())()
+    const res = await getTermsHandler(getClient())(crypto.randomUUID())()
     expect(res.status).toBe(500)
   })
 
@@ -28,7 +26,7 @@ describe("getTermsHandler", () => {
       request: <T>() => Promise.resolve({ view: { assets: [] } }) as Promise<T>,
     }))
 
-    const res = await getTermsHandler(getClient())(stubbedLogger())(crypto.randomUUID())()
+    const res = await getTermsHandler(getClient())(crypto.randomUUID())()
     expect(res.status).toBe(500)
     expect(res.value).toBeInstanceOf(Error)
     expect((res.value as Error).message).toBe("Unable to convert data from Collibra")
@@ -101,7 +99,7 @@ describe("getTermsHandler", () => {
         }) as Promise<T>,
     }))
 
-    const res = await getTermsHandler(getClient())(stubbedLogger())(crypto.randomUUID())()
+    const res = await getTermsHandler(getClient())(crypto.randomUUID())()
     expect(res.status).toBe(200)
   })
 })

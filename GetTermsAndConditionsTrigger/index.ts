@@ -30,7 +30,7 @@ const GetTermsAndConditionTrigger: AzureFunction = async function (context: Cont
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
 
-  const res = await getTermsHandler(collibraClient)(logger)(context.bindingData.id)()
+  const res = await getTermsHandler(collibraClient)(context.bindingData.id)()
 
   if (isErrorResult(res)) {
     logger.error("GetTermsAndConditionTrigger failed", (res.value as Error).message)
