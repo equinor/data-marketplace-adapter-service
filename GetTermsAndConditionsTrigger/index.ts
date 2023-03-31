@@ -1,16 +1,19 @@
 import type { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import type { RightsToUse } from "@equinor/data-marketplace-models"
+import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
-import { getAssetAttributes } from "../lib/collibra/client/get_asset_attributes"
-import { getRightsToUseAsset } from "../lib/collibra/client/get_rights_to_use_asset"
+import { rightsToUseAdapter } from "../lib/adapters/rights_to_use_adapter"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
-import { rightsToUseAdapter } from "../lib/collibra/rights_to_use_adapter"
+import { isValidID } from "../lib/isValidID"
 import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
 import { isErrorResult } from "../lib/net/is_error_result"
 import { makeResult } from "../lib/net/make_result"
+import { toNetError } from "../lib/net/to_net_err"
+
+import { getTerms } from "./lib/getTerms"
 
 /**
  * @openapi
@@ -36,15 +39,15 @@ const GetTermsAndConditionTrigger: AzureFunction = async function (context: Cont
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
 
-  const { id } = context.bindingData
-
   const res = await pipe(
-    getRightsToUseAsset(collibraClient)(id),
-    TE.bindTo("collibraRtuAsset"),
-    TE.bind("collibraRtuAttrs", ({ collibraRtuAsset }) => getAssetAttributes(collibraClient)(collibraRtuAsset.id)),
-    TE.map(({ collibraRtuAsset, collibraRtuAttrs }) =>
-      rightsToUseAdapter({ ...collibraRtuAsset, attributes: collibraRtuAttrs })
-    ),
+    context.bindingData.id,
+    isValidID,
+    E.mapLeft(toNetError(400)),
+    TE.fromEither,
+    TE.chain(getTerms(collibraClient)),
+    TE.mapLeft(toNetError(500)),
+    TE.map((asset) => rightsToUseAdapter(asset.relations[0].targetAssets[0])),
+    TE.mapLeft(toNetError(500)),
     TE.match(
       (err) => {
         logger.error(err)
