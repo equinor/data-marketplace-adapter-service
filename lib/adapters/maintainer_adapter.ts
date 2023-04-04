@@ -1,26 +1,55 @@
-import type { Maintainer } from "@equinor/data-marketplace-models/types/Maintainer"
-import * as E from "fp-ts/Either"
-import * as O from "fp-ts/Option"
-import { pipe } from "fp-ts/function"
+import { Maintainer, User } from "@equinor/data-marketplace-models"
 
-import { roleAdapter } from "../adapters/role_adapter"
-import { userAdapter } from "../adapters/user_adapter"
+import {
+  ResponsibilityGroupUser,
+  ResponsibilityRole,
+  ResponsibilityUser,
+} from "../../GetMaintainersTrigger/lib/getResponsibilities"
 
-export const maintainerAdapter =
-  (cu: O.Option<Collibra.User>) =>
-  (cr: O.Option<Collibra.Role>): E.Either<Error, Maintainer> =>
-    pipe(
-      cu,
-      E.fromOption(() => "No user"),
-      E.chain(userAdapter),
-      E.bindTo("user"),
-      E.bind("role", () =>
-        pipe(
-          cr,
-          E.fromOption(() => "No role"),
-          E.chain(roleAdapter)
-        )
-      ),
-      E.mapLeft((err) => new Error(err)),
-      E.map(({ user, role }) => ({ ...user, role }))
-    )
+type Responsibility = {
+  user: ResponsibilityUser | ResponsibilityGroupUser
+  role: ResponsibilityRole
+}
+
+const isGroupUser = (user: object): user is ResponsibilityGroupUser => "groupUserId" in user
+
+export const maintainerAdapter = (responsibility: Responsibility): Maintainer => {
+  const user: User = {
+    createdAt: new Date(),
+    email: "",
+    firstName: "",
+    id: "",
+    lastName: "",
+    updatedAt: new Date(),
+  }
+
+  if (isGroupUser(responsibility.user)) {
+    Object.assign(user, {
+      createdAt: new Date(responsibility.user.groupUserCreatedAt),
+      email: responsibility.user.groupUserEmail?.toLowerCase(),
+      firstName: responsibility.user.groupUserFirstName,
+      id: responsibility.user.groupUserId,
+      lastName: responsibility.user.groupUserLastName,
+      updatedAt: new Date(responsibility.user.groupUserUpdatedAt),
+    } as User)
+  } else {
+    Object.assign(user, {
+      createdAt: new Date(responsibility.user.userCreatedAt),
+      email: responsibility.user.userEmail?.toLowerCase(),
+      firstName: responsibility.user.userFirstName,
+      id: responsibility.user.userId,
+      lastName: responsibility.user.userLastName,
+      updatedAt: new Date(responsibility.user.userUpdatedAt),
+    } as User)
+  }
+
+  return {
+    ...user,
+    role: {
+      createdAt: new Date(responsibility.role.roleCreatedAt),
+      id: responsibility.role.roleId,
+      name: responsibility.role.roleName,
+      updatedAt: new Date(responsibility.role.roleUpdatedAt),
+    },
+  }
+}
