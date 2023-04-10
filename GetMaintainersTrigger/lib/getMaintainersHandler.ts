@@ -1,4 +1,5 @@
 import { Maintainer } from "@equinor/data-marketplace-models"
+import * as E from "fp-ts/lib/Either"
 import * as TE from "fp-ts/lib/TaskEither"
 import { pipe } from "fp-ts/lib/function"
 
@@ -20,12 +21,15 @@ export const getMaintainersHandler = (client: Net.Client) => (roles: string[]) =
     TE.mapLeft(toNetError(500)),
     TE.map((responsibilities) =>
       responsibilities.flatMap((responsibility) =>
-        [...(responsibility.users ?? []), ...(responsibility.groups[0].groupUsers ?? [])]
+        [...(responsibility.users ?? []), ...(responsibility.groups?.[0].groupUsers ?? [])]
           .filter((user) => !!((user as ResponsibilityUser).userId || (user as ResponsibilityGroupUser).groupUserId))
-          .map((user) => maintainerAdapter({ role: responsibility.roles[0], user }))
+          .map((user) => maintainerAdapter({ role: responsibility.roles?.[0], user }))
       )
     ),
-    TE.mapLeft((err) => toNetError(500)(`Unable to process data from Collibra: ${err.message}`)),
+    TE.mapLeft(toNetError(500)),
+    TE.map((a) => pipe(a, E.sequenceArray, TE.fromEither)),
+    TE.flattenW,
+    TE.mapLeft(toNetError(500)),
     TE.match(
       (err) => makeResult<readonly Maintainer[], NetError>(err.status, err),
       (maintainers) => makeResult<readonly Maintainer[], NetError>(200, maintainers)
