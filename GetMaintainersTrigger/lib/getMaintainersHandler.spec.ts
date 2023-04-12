@@ -1,5 +1,7 @@
 import crypto from "node:crypto"
 
+import { NetError } from "../../lib/net/NetError"
+
 import { getMaintainersHandler } from "./getMaintainersHandler"
 
 describe("getMaintainersHandler", () => {
@@ -43,9 +45,8 @@ describe("getMaintainersHandler", () => {
 
     const r = await getMaintainersHandler(getClient())([])(crypto.randomUUID())()
 
+    expect(r.value).toBeInstanceOf(NetError)
     expect(r.status).toBe(500)
-    expect(r.value).toBeInstanceOf(Error)
-    expect((r.value as Error).message).toBe("Unable to process responsibility data from Collibra")
   })
 
   it("returns 200", async () => {
