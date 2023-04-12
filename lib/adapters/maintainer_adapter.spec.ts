@@ -32,20 +32,23 @@ describe("maintainerAdapter", () => {
     } as ResponsibilityUser
   })
 
-  afterEach(() => {
-    role = null
-    user = null
-  })
-
   it("returns left path for invalid date", () => {
-    const invalidUser = pipe(user, (u) => ({ ...u, userCreatedAt: "invalid date" }))
-    const invalidRole = pipe(role, (r) => ({ ...r, roleCreatedAt: "invalid date" }))
+    const invalidUser = { ...user, userCreatedAt: "invalid date", userUpdatedAt: "invalid date" }
+    const invalidRole = { ...role, roleCreatedAt: "invalid date", roleUpdatedAt: "invalid date" }
 
-    // @ts-ignore
-    expect(E.isLeft(maintainerAdapter({ role: invalidRole, user: invalidUser }))).toBe(true)
+    pipe(
+      // @ts-ignore
+      maintainerAdapter({ role: invalidRole, user: invalidUser }),
+      E.match(
+        (err) => expect(err).toBe("Invalid date(s) in field(s) createdAt, updatedAt"),
+        () => {} // eslint-disable-line @typescript-eslint/no-empty-function
+      )
+    )
   })
 
   it("returns right path for valid input", () => {
-    expect(E.isRight(maintainerAdapter({ role: role!, user: user! }))).toBe(true)
+    expect(E.isRight(maintainerAdapter({ role: role as ResponsibilityRole, user: user as ResponsibilityUser }))).toBe(
+      true
+    )
   })
 })
