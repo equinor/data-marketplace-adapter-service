@@ -14,6 +14,7 @@ import { ResponsibilityGroupUser, ResponsibilityUser, getResponsibilities } from
 export const getMaintainersHandler = (client: Net.Client) => (roles: string[]) => (assetId: string) =>
   pipe(
     assetId,
+    // @TODO: implement a composable function to cast left path to a NetError
     isValidID,
     TE.fromEither,
     TE.mapLeft(toNetError(400)),
