@@ -28,7 +28,7 @@ describe("hasInvalidDateFields", () => {
       E.chain(hasInvalidDateFields),
       E.match(
         (err) => expect(err).toBe("Invalid date(s) in field(s) createdOn, lastModifiedOn"),
-        () => {} // eslint-disable-line @typescript-eslint/no-empty-function
+        () => {}
       )
     )
   })
@@ -38,7 +38,7 @@ describe("hasInvalidDateFields", () => {
       E.of(resource),
       E.chain(hasInvalidDateFields),
       E.match(
-        () => {}, // eslint-disable-line @typescript-eslint/no-empty-function
+        () => {},
         (r) => expect(r).toEqual(resource)
       )
     )

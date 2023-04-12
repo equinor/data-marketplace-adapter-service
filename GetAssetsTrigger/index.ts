@@ -36,6 +36,7 @@ const GetAssetsTrigger: AzureFunction = async function (context: Context, req: H
   const logger = makeLogger(context.log)
   const collibraClient = await makeCollibraClient(req.headers.authorization)(logger)
 
+  // @TODO implement pagination
   // const { limit, offset } = req.query
 
   const res = await pipe(

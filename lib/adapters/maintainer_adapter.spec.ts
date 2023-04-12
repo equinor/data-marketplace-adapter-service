@@ -41,7 +41,7 @@ describe("maintainerAdapter", () => {
       maintainerAdapter({ role: invalidRole, user: invalidUser }),
       E.match(
         (err) => expect(err).toBe("Invalid date(s) in field(s) createdAt, updatedAt"),
-        () => {} // eslint-disable-line @typescript-eslint/no-empty-function
+        () => {}
       )
     )
   })
