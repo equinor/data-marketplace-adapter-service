@@ -3,6 +3,7 @@ import * as E from "fp-ts/lib/Either"
 import { pipe } from "fp-ts/lib/function"
 
 import { ResponsibilityGroupUser, ResponsibilityUser } from "../../GetMaintainersTrigger/lib/getResponsibilities"
+import { hasInvalidDateFields } from "../has_invalid_date_fields"
 
 const isGroupUser = (user: object): user is ResponsibilityGroupUser => "groupUserId" in user
 
@@ -27,5 +28,6 @@ export const userAdapter = (user: ResponsibilityUser | ResponsibilityGroupUser) 
             lastName: (user as ResponsibilityUser).userLastName,
             updatedAt: new Date((user as ResponsibilityUser).userUpdatedAt),
           } as User)
-    )
+    ),
+    E.chain(hasInvalidDateFields)
   )
