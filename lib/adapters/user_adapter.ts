@@ -1,18 +1,33 @@
-import type { User } from "@equinor/data-marketplace-models"
-import * as E from "fp-ts/Either"
-import { pipe } from "fp-ts/function"
+import { User } from "@equinor/data-marketplace-models"
+import * as E from "fp-ts/lib/Either"
+import { pipe } from "fp-ts/lib/function"
 
+import { ResponsibilityGroupUser, ResponsibilityUser } from "../../GetMaintainersTrigger/lib/getResponsibilities"
 import { hasInvalidDateFields } from "../has_invalid_date_fields"
 
-export const userAdapter = (collibraUser: Collibra.User): E.Either<string, User> => {
-  const user: User = {
-    createdAt: new Date(collibraUser.createdOn),
-    email: collibraUser.emailAddress.toLowerCase(),
-    firstName: collibraUser.firstName,
-    id: collibraUser.id,
-    lastName: collibraUser.lastName,
-    updatedAt: new Date(collibraUser.lastModifiedOn),
-  }
+const isGroupUser = (user: object): user is ResponsibilityGroupUser => "groupUserId" in user
 
-  return pipe(user, hasInvalidDateFields)
-}
+export const userAdapter = (user: ResponsibilityUser | ResponsibilityGroupUser) =>
+  pipe(
+    E.of(isGroupUser(user)),
+    E.map((b) =>
+      b
+        ? ({
+            createdAt: new Date((user as ResponsibilityGroupUser).groupUserCreatedAt),
+            email: (user as ResponsibilityGroupUser).groupUserEmail?.toLowerCase(),
+            firstName: (user as ResponsibilityGroupUser).groupUserFirstName,
+            id: (user as ResponsibilityGroupUser).groupUserId,
+            lastName: (user as ResponsibilityGroupUser).groupUserLastName,
+            updatedAt: new Date((user as ResponsibilityGroupUser).groupUserUpdatedAt),
+          } as User)
+        : ({
+            createdAt: new Date((user as ResponsibilityUser).userCreatedAt),
+            email: (user as ResponsibilityUser).userEmail?.toLowerCase(),
+            firstName: (user as ResponsibilityUser).userFirstName,
+            id: (user as ResponsibilityUser).userId,
+            lastName: (user as ResponsibilityUser).userLastName,
+            updatedAt: new Date((user as ResponsibilityUser).userUpdatedAt),
+          } as User)
+    ),
+    E.chain(hasInvalidDateFields)
+  )

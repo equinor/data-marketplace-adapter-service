@@ -1,7 +1,7 @@
 import { deserializeImage } from "./deserializers/image"
 import { deserializeTable } from "./deserializers/table"
 
-// TODO: remove empty
+// TODO: remove empty tags
 export const rules = [
   {
     deserialize(el: HTMLElement, next: any, block: any) {

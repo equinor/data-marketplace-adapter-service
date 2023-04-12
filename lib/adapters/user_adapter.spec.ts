@@ -1,53 +1,35 @@
-import { randomUUID } from "crypto"
+import * as E from "fp-ts/lib/Either"
 
-import * as E from "fp-ts/Either"
+import { ResponsibilityUser } from "../../GetMaintainersTrigger/lib/getResponsibilities"
 
 import { userAdapter } from "./user_adapter"
 
-describe("maintainerAdapter", () => {
-  let user: Collibra.User | null = null
-
-  beforeEach(() => {
-    user = {
-      activated: true,
-      additionalEmailAddresses: [],
-      addresses: [],
-      apiUser: false,
-      createdBy: randomUUID(),
-      createdOn: new Date().valueOf(),
-      emailAddress: "NAME@example.com",
-      enabled: true,
-      firstName: "Name",
-      gender: "UNKNOWN",
-      guestUser: false,
-      id: randomUUID(),
-      instantMessagingAccounts: [],
-      language: "en",
-      lastModifiedBy: randomUUID(),
-      lastModifiedOn: new Date().valueOf(),
-      lastName: "Nameson",
-      ldapUser: false,
-      licenseType: "CONSUMER",
-      phoneNumbers: [],
-      resourceType: "User",
-      system: false,
-      userName: "NAME@example.com",
-      userSource: "SSO",
-      websites: [],
+describe("userAdapter", () => {
+  it("returns left path for invalid object", () => {
+    const user: ResponsibilityUser = {
+      // @ts-ignore
+      userCreatedAt: "Invalid date",
+      userEmail: "email",
+      userFirstName: "first name",
+      userId: "abc123",
+      userLastName: "last name",
+      // @ts-ignore
+      userUpdatedAt: "Invalid date",
     }
+
+    expect(E.isLeft(userAdapter(user))).toBe(true)
   })
 
-  afterEach(() => {
-    user = null
-  })
+  it("returns right path for valid object", () => {
+    const user: ResponsibilityUser = {
+      userCreatedAt: new Date().valueOf(),
+      userEmail: "email",
+      userFirstName: "first name",
+      userId: "abc123",
+      userLastName: "last name",
+      userUpdatedAt: new Date().valueOf(),
+    }
 
-  it("returns left path for invalid date", () => {
-    // @ts-ignore
-    user.createdOn = "Invalid date"
-    expect(E.isLeft(userAdapter(user as Collibra.User))).toBe(true)
-  })
-
-  it("returns right path for valid input", () => {
-    expect(E.isRight(userAdapter(user as Collibra.User))).toBe(true)
+    expect(E.isRight(userAdapter(user))).toBe(true)
   })
 })
