@@ -7,8 +7,12 @@ import { sanitizeHtml } from "../sanitize_html"
 import { rules } from "./rules"
 import { collibraRichText } from "./schemas/collibraRichText"
 
+const blockContentType = collibraRichText.get("content").fields.find((field: any) => field.name === "body").type
+
 export const htmlToPortableText = (html: string): PortableTextBlock[] =>
-  htmlToBlocks(html, collibraRichText.get("content").fields.find((field: any) => field.name === "body").type, {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /* @ts-ignore */
+  htmlToBlocks(html, blockContentType, {
     rules,
     parseHtml: (html: string) => htmlStringToDom(sanitizeHtml(html)),
   })
