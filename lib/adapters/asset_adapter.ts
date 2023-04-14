@@ -55,5 +55,4 @@ export const assetAdapter =
       updatedAt: new Date(asset.lastModifiedOn),
       updateFrequency: !isEmpty(attrs.timeliness?.value) ? htmlToPortableText(attrs.timeliness.value) : null!,
     }
-
   }
