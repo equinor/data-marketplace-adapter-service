@@ -10,9 +10,7 @@ import { collibraRichText } from "./schemas/collibraRichText"
 const blockContentType = collibraRichText.get("content").fields.find((field: any) => field.name === "body").type
 
 export const htmlToPortableText = (html: string): PortableTextBlock[] =>
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  /* @ts-ignore */
   htmlToBlocks(html, blockContentType, {
     rules,
     parseHtml: (html: string) => htmlStringToDom(sanitizeHtml(html)),
-  })
+  }) as PortableTextBlock[]
