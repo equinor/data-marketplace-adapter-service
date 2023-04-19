@@ -5,37 +5,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Post } from "../lib/net/post"
 
 type OutputModuleResponse = {
-  assets: {
-    id: string
-    name: string
-    createdAt: number
-    updatedAt: number
-    domains: {
-      communities: {
-        communityId: string
-        communityName: string
-      }[]
-    }[]
-    assetTypes: {
-      assetTypeId: string
-      assetTypeName: string
-    }[]
-    statuses: {
-      statusId: string
-      statusName: string
-    }[]
-    attributes: {
-      attributeId: string
-      attributeValue: string
-      attributeType: {
-        attributeTypeId: string
-        attributeTypeName: string
-      }[]
-    }[]
-    tags: {
-      tagId: string
-      tagName: string
-    }[]
+  assets: (Collibra.OutputModuleAsset & {
     responsibilities: {
       users: {
         userId?: string
@@ -56,7 +26,7 @@ type OutputModuleResponse = {
         roleName: string
       }[]
     }[]
-  }[]
+  })[]
 }
 
 export const getAssets = (client: Net.Client) =>

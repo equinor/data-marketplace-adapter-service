@@ -4,8 +4,8 @@ import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 
+import { assetAdapter } from "../lib/adapters/asset_adapter"
 import { makeCollibraClient } from "../lib/collibra/client/make_collibra_client"
-import { htmlToPortableText } from "../lib/html_to_portable_text"
 import { isValidID } from "../lib/isValidID"
 import { makeLogger } from "../lib/logger"
 import { NetError } from "../lib/net/NetError"
@@ -45,38 +45,7 @@ const GetAssetTrigger: AzureFunction = async function (context: Context, req: Ht
     TE.fromEither,
     TE.chain(getAsset(collibraClient)),
     TE.mapLeft(toNetError(500)),
-    TE.map(
-      (asset) =>
-        ({
-          community: {
-            id: asset.domains[0].communities[0].communityId,
-            name: asset.domains[0].communities[0].communityName,
-          },
-          createdAt: asset.createdAt,
-          description: htmlToPortableText(
-            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Additional Information")
-              ?.attributeValue ?? ""
-          ),
-          id: asset.id,
-          name: asset.name,
-          provider: { id: "", name: "Collibra" },
-          qualityScore: 0.0,
-          rating: 0.0,
-          type: {
-            id: asset.assetTypes[0]?.assetTypeId ?? "",
-            name: asset.assetTypes[0]?.assetTypeName ?? "",
-          },
-          updatedAt: asset.updatedAt,
-          updateFrequency: htmlToPortableText(
-            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Timeliness")
-              ?.attributeValue ?? ""
-          ),
-          excerpt: htmlToPortableText(
-            asset.attributes.find((attr) => attr.attributeType[0]?.attributeTypeName === "Description")
-              ?.attributeValue ?? ""
-          ),
-        } as Asset)
-    ),
+    TE.map(assetAdapter),
     TE.match(
       (err) => makeResult<Asset, NetError>(err.status ?? 500, err),
       (assets) => makeResult<Asset, NetError>(200, assets)

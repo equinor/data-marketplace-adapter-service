@@ -525,6 +525,39 @@ declare namespace Collibra {
   }
   export type PagedTagResponse = PagedResponse<Tag>
 
+  type OutputModuleAsset = {
+    id: string
+    name: string
+    createdAt: number
+    updatedAt: number
+    domains: {
+      communities: {
+        communityId: string
+        communityName: string
+      }[]
+    }[]
+    assetTypes: {
+      assetTypeId: string
+      assetTypeName: string
+    }[]
+    statuses: {
+      statusId: string
+      statusName: string
+    }[]
+    attributes: {
+      attributeId: string
+      attributeValue: string
+      attributeType: {
+        attributeTypeId: string
+        attributeTypeName: string
+      }[]
+    }[]
+    tags: {
+      tagId: string
+      tagName: string
+    }[]
+  }
+
   export type OutputModuleResponse<T = unknown> = {
     view: T
   }
