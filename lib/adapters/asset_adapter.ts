@@ -3,56 +3,46 @@ import { toPlainText } from "@portabletext/toolkit"
 
 import { htmlToPortableText } from "../html_to_portable_text"
 
-const ATTRIBUTE_NAMES = ["additional information", "description", "timeliness"]
-
 const isEmpty = (value?: string) => {
-  return !value || !value.replace("--", "") || !toPlainText(htmlToPortableText(value)).replace("--", "").trim()
+  return (
+    !value ||
+    !value.trim() ||
+    !value.replace("--", "") ||
+    !toPlainText(htmlToPortableText(value)).replace("--", "").trim()
+  )
 }
 
-export const assetAdapter =
-  (attributes: Collibra.Attribute[]) =>
-  (community: Collibra.NamedResourceReference) =>
-  (tags: Collibra.Tag[]) =>
-  (asset: Collibra.Asset): Asset => {
-    const attrs = attributes.reduce((map, attr) => {
-      if (attr.type.name.toLowerCase() in map || !ATTRIBUTE_NAMES.includes(attr.type.name.toLowerCase())) {
-        return map
-      }
+export const assetAdapter = (asset: Collibra.OutputModuleAsset): Asset => {
+  const community = asset.domains[0]?.communities[0]
 
-      return {
-        ...map,
-        [attr.type.name.toLowerCase()]: attr,
-      }
-    }, {} as Record<string, Collibra.Attribute>)
+  const attributes = asset.attributes.reduce((obj, attr) => {
+    const attributeName = attr.attributeType[0]?.attributeTypeName
+    if (!attributeName) return obj
+    return attributeName in obj ? obj : { ...obj, [attributeName]: attr.attributeValue }
+  }, {} as Record<string, string>)
 
-    return {
-      community: {
-        id: community.id,
-        name: community.name,
-      },
-      createdAt: new Date(asset.createdOn),
-      excerpt: !isEmpty(attrs.description?.value) ? htmlToPortableText(attrs.description.value) : null!,
-      description: !isEmpty(attrs["additional information"]?.value)
-        ? htmlToPortableText(attrs["additional information"].value)
-        : null!,
-      id: asset.id,
-      name: asset.name!,
-      provider: {
-        id: "",
-        name: "Collibra",
-      },
-      qualityScore: 0,
-      rating: 0,
-      tags:
-        tags?.map((tag) => ({
-          id: tag.id,
-          label: tag.name ?? "",
-        })) ?? [],
-      type: {
-        id: asset.type.id,
-        name: asset.type.name,
-      },
-      updatedAt: new Date(asset.lastModifiedOn),
-      updateFrequency: !isEmpty(attrs.timeliness?.value) ? htmlToPortableText(attrs.timeliness.value) : null!,
-    }
+  const assetType = asset.assetTypes[0]
+
+  return {
+    community: {
+      id: community.communityId ?? "",
+      name: community.communityName ?? "",
+    },
+    createdAt: asset.createdAt,
+    description: isEmpty(attributes["Additional Information"])
+      ? []
+      : htmlToPortableText(attributes["Additional Information"]),
+    id: asset.id,
+    name: asset.name,
+    provider: { id: "", name: "Collibra" },
+    qualityScore: 0.0,
+    rating: 0.0,
+    type: {
+      id: assetType?.assetTypeId ?? "",
+      name: assetType?.assetTypeName ?? "",
+    },
+    updatedAt: asset.updatedAt,
+    updateFrequency: isEmpty(attributes.Timeliness) ? [] : htmlToPortableText(attributes.Timeliness),
+    excerpt: isEmpty(attributes.Description) ? [] : htmlToPortableText(attributes.Description),
   }
+}
