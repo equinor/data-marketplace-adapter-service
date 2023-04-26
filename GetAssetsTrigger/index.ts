@@ -57,7 +57,7 @@ const GetAssetsTrigger: AzureFunction = async function (context: Context, req: H
                 ?.attributeValue ?? ""
             ),
             id: asset.id,
-            name: asset.name,
+            name: asset.name?.trim(),
             provider: { id: "", name: "Collibra" },
             qualityScore: 0.0,
             rating: 0.0,
